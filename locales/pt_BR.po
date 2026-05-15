@@ -1,0 +1,699 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ebenezerclone 2.2.1\n"
+"POT-Creation-Date: 2026-02-11 00:00+0000\n"
+"PO-Revision-Date: 2026-02-11 00:00+0000\n"
+"Last-Translator: Renato Valadares\n"
+"Language-Team: pt_BR\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Ebenezer Clone"
+msgstr "Ebenezer Clone"
+
+msgid "Clone ticket"
+msgstr "Liberar clonagem de chamados"
+
+msgid "Clonar chamado"
+msgstr "Clonar chamado"
+
+msgid "This ticket was cloned from ticket %1$s."
+msgstr "Este chamado foi clonado do chamado %1$s."
+
+msgid "Ticket %1$s was created as a clone of this ticket."
+msgstr "O chamado %1$s foi criado como clone deste chamado."
+
+msgid "Cloned from ticket #%1$s"
+msgstr "Clonado do chamado #%1$s"
+
+msgid "Cloned to ticket #%1$s"
+msgstr "Clonado para o chamado #%1$s"
+
+msgid "Ticket successfully cloned: %1$s"
+msgstr "Chamado clonado com sucesso: %1$s"
+
+msgid "Linked ticket #%1$s"
+msgstr "Chamado relacionado #%1$s"
+
+msgid "Default remove author from assigned"
+msgstr "Remover autor da atribuição por padrão"
+
+msgid "Category is mandatory."
+msgstr "Categoria obrigatória."
+
+msgid "Type is mandatory."
+msgstr "Tipo obrigatório."
+
+msgid "Clone form fields"
+msgstr "Campos do formulário de clonagem"
+
+msgid "Editable"
+msgstr "Editável"
+
+msgid "Read-only"
+msgstr "Somente leitura"
+
+msgid "Hidden"
+msgstr "Oculto"
+
+msgid "Log clone creation on cloned ticket"
+msgstr "Registrar criação do clone no chamado clonado"
+
+msgid "Log clone reference on source ticket"
+msgstr "Registrar referência do clone no chamado de origem"
+
+msgid "Log ticket link creation"
+msgstr "Registrar criação do vínculo entre chamados"
+
+msgid "Log informational followups created by plugin"
+msgstr "Registrar acompanhamentos informativos criados pelo plugin"
+
+msgid "Log copied linked items"
+msgstr "Registrar itens vinculados copiados"
+
+msgid "Log copied actors"
+msgstr "Registrar atores copiados"
+
+msgid "Log clone failure on source ticket"
+msgstr "Registrar falha de clonagem no chamado de origem"
+
+msgid "Timeline history logs"
+msgstr "Logs do histórico da linha do tempo"
+
+msgid "Clone failed for this ticket: %1$s"
+msgstr "A clonagem falhou para este chamado: %1$s"
+
+msgid "Link created with source ticket #%1$s"
+msgstr "Vínculo criado com o chamado de origem #%1$s"
+
+msgid "Link created with cloned ticket #%1$s"
+msgstr "Vínculo criado com o chamado clonado #%1$s"
+
+msgid "Copied %1$s actor(s) from source ticket"
+msgstr "Copiado(s) %1$s ator(es) do chamado de origem"
+
+msgid "Copied %1$s linked item(s) from source ticket"
+msgstr "Copiado(s) %1$s item(ns) vinculado(s) do chamado de origem"
+
+msgid "Copied %1$s document link(s) from source ticket"
+msgstr "Copiado(s) %1$s vínculo(s) de anexo(s) do chamado de origem"
+
+msgid "Created %1$s informational followup(s) during clone"
+msgstr "Criado(s) %1$s acompanhamento(s) informativo(s) durante a clonagem"
+
+msgid "Unknown error"
+msgstr "Erro desconhecido"
+
+msgid "Please wait for the category field to finish loading."
+msgstr "Aguarde o carregamento do campo de categoria."
+
+msgid "You do not have permission to edit assigned actors for this ticket."
+msgstr "Você não tem permissão para editar os atribuídos deste chamado."
+
+msgid "Profile permissions matrix"
+msgstr "Matriz de permissões por perfil"
+
+msgid "No active profiles found."
+msgstr "Nenhum perfil ativo encontrado."
+
+msgid "Allows creating a cloned ticket from the clone tab. If disabled, the profile cannot execute clone in this plugin."
+msgstr "Permite criar um chamado clonado pela aba de clonagem. Se desabilitado, o perfil não pode executar clonagem neste plugin."
+
+msgid "Massive clone action"
+msgstr "Liberar clonagem em massa"
+
+msgid "Allows the native massive/single clone action in ticket listings. If disabled, clone actions are hidden in massive action menus."
+msgstr "Permite a ação nativa de clonagem (massa/simples) nas listagens de chamados. Se desabilitado, as ações de clonagem ficam ocultas nos menus de ações em massa."
+
+msgid "Change type in clone form"
+msgstr "Alterar tipo no formulário de clonagem"
+
+msgid "Allows changing ticket type in the clone form. If disabled, type remains read-only and original value is kept."
+msgstr "Permite alterar o tipo do chamado no formulário de clonagem. Se desabilitado, o tipo fica somente leitura e o valor original é mantido."
+
+msgid "Change category in clone form"
+msgstr "Alterar categoria no formulário de clonagem"
+
+msgid "Allows changing category in the clone form. If disabled, category remains read-only and original value is kept."
+msgstr "Permite alterar a categoria no formulário de clonagem. Se desabilitado, a categoria fica somente leitura e o valor original é mantido."
+
+msgid "Edit assigned group"
+msgstr "Editar grupo atribuído"
+
+msgid "Allows editing assigned groups in tickets. If disabled, group assignment changes are blocked for this profile."
+msgstr "Permite editar grupos atribuídos em chamados. Se desabilitado, alterações de grupo atribuído são bloqueadas para este perfil."
+
+msgid "Edit assigned technician"
+msgstr "Editar técnico atribuído"
+
+msgid "Allows editing assigned technicians in tickets. If disabled, technician assignment changes are blocked for this profile."
+msgstr "Permite editar técnicos atribuídos em chamados. Se desabilitado, alterações de técnico atribuído são bloqueadas para este perfil."
+
+msgid "Clone ticket action"
+msgstr "Liberar ação de clonagem"
+
+msgid "Allow empty category edition"
+msgstr "Permitir edição de categoria vazia"
+
+msgid "Checked: when ticket category is empty, plugin does not lock category field and allows editing. Unchecked: category follows the normal profile/global edit policy and core rules."
+msgstr "Marcada: quando a categoria do chamado estiver vazia, o plugin não bloqueia o campo de categoria e permite edição. Desmarcada: a categoria segue a política normal de edição por perfil/global e as regras do core."
+
+msgid "Global permissions"
+msgstr "Permissões globais"
+
+msgid "Global permission by layer"
+msgstr "Permissão global por camada"
+
+msgid "Add profile authorization"
+msgstr "Adicionar autorização de perfil"
+
+msgid "Allow"
+msgstr "Habilitar"
+
+msgid "Allows the Clone action in ticket actions menu. If disabled, clone action is hidden in ticket actions."
+msgstr "Permite a ação Clonar no menu de ações do chamado. Se desabilitado, a ação de clonagem fica oculta nas ações do chamado."
+
+msgid "Assignment controls"
+msgstr "Controles de atribuição"
+
+msgid "Block"
+msgstr "Bloquear"
+
+msgid "Checked: blocks Clone action in ticket actions and Clone action in massive actions for all profiles. If profile matrix is checked for this rule, it can override and allow. Unchecked: plugin ignores profile matrix for this rule and keeps core/other plugins rules."
+msgstr "Marcada: bloqueia a ação Clonar nas ações do chamado e nas ações em massa para todos os perfis. Se a matriz de perfil estiver marcada para esta regra, ela pode sobrescrever e habilitar. Desmarcada: o plugin ignora a matriz de perfil para esta regra e mantém as regras do core/outros plugins."
+
+msgid "Checked: layer is enabled and profile matrix is respected. Unchecked: plugin does not enforce this layer and keeps core/other plugins rules."
+msgstr "Marcada: a camada fica habilitada e a matriz de perfil é respeitada. Desmarcada: o plugin não aplica esta camada e mantém as regras do core/outros plugins."
+
+msgid "Checked: all ticket properties are blocked for editing by default. Unchecked: all ticket properties are enabled for editing by default. When a profile policy exists, each field checkbox has priority. This control affects only form editability and does not change business rules."
+msgstr "Marcada: todas as propriedades do chamado ficam bloqueadas para edição por padrão. Desmarcada: todas as propriedades do chamado ficam habilitadas para edição por padrão. Quando existir política por perfil, o checkbox de cada campo tem prioridade. Este controle afeta apenas a edição no formulário e não altera regras de negócio."
+
+msgid "Clone operations"
+msgstr "Operações de clonagem"
+
+msgid "Global block for clone actions"
+msgstr "Bloqueio global para ações de clonagem"
+
+msgid "Global block for ticket properties"
+msgstr "Bloqueio global para propriedades do chamado"
+
+msgid "Global permission for assignment controls. Checked: profile matrix controls assignment permissions. Unchecked: plugin does not enforce assignment permissions and keeps core/other plugins rules."
+msgstr "Permissão global para controles de atribuição. Marcada: a matriz de perfil controla as permissões de atribuição. Desmarcada: o plugin não aplica permissões de atribuição e mantém as regras do core/outros plugins."
+
+msgid "Global permission for clone operations. Checked: enables this layer and applies profile matrix. Unchecked: plugin does not enforce clone operations and keeps core/other plugins rules."
+msgstr "Permissão global para operações de clonagem. Marcada: habilita esta camada e aplica a matriz de perfil. Desmarcada: o plugin não aplica operações de clonagem e mantém as regras do core/outros plugins."
+
+msgid "Ignore"
+msgstr "Ignorar"
+
+msgid "No profile authorization configured."
+msgstr "Nenhuma autorização de perfil configurada."
+
+msgid "Ticket properties policy"
+msgstr "Política de propriedades do chamado"
+
+msgid "SLA Time to resolve"
+msgstr "SLA Tempo para solução"
+
+msgid "SLA Time to own"
+msgstr "SLA Tempo para assumir"
+
+msgid "OLA Time to resolve"
+msgstr "OLA Tempo para solução"
+
+msgid "OLA Time to own"
+msgstr "OLA Tempo para assumir"
+
+msgid "Bulk update properties"
+msgstr "Atualização em lote das propriedades"
+
+msgid "Apply to all"
+msgstr "Aplicar em todas"
+
+msgid "Edit requester"
+msgstr "Editar requerente"
+
+msgid "Allows editing requester actor in tickets. If disabled, requester changes are blocked for this profile when global actor block is enabled."
+msgstr "Permite editar o ator requerente no chamado. Se desabilitado, as alterações de requerente são bloqueadas para este perfil quando o bloqueio global de atores estiver habilitado."
+
+msgid "Edit observer"
+msgstr "Editar observador"
+
+msgid "Allows editing observer actor in tickets. If disabled, observer changes are blocked for this profile when global actor block is enabled."
+msgstr "Permite editar o ator observador no chamado. Se desabilitado, as alterações de observador são bloqueadas para este perfil quando o bloqueio global de atores estiver habilitado."
+
+msgid "Edit assignee"
+msgstr "Editar atribuído"
+
+msgid "Allows editing assigned actor in tickets. If disabled, assignee changes are blocked for this profile when global actor block is enabled."
+msgstr "Permite editar o ator atribuído no chamado. Se desabilitado, as alterações de atribuição são bloqueadas para este perfil quando o bloqueio global de atores estiver habilitado."
+
+msgid "Global block for actor fields"
+msgstr "Bloqueio global para campos de atores"
+
+msgid "Checked: plugin blocks requester, observer and assignee actor fields for all profiles by default. Profile matrix can explicitly allow each actor field. If GLPI/core already allows editing, core rule prevails. Unchecked: plugin ignores actor-field matrix and keeps core/other plugins rules."
+msgstr "Marcada: o plugin bloqueia por padrão os campos de atores Requerente, Observador e Atribuído para todos os perfis. A matriz por perfil pode liberar explicitamente cada campo. Se o GLPI/core já permitir edição, a regra do core prevalece. Desmarcada: o plugin ignora a matriz de campos de atores e mantém as regras do core/outros plugins."
+
+msgid "You do not have permission to edit actor fields for this ticket."
+msgstr "Você não tem permissão para editar os campos de atores deste chamado."
+
+msgid "Editable: field can be changed in clone form. Read-only: field is visible but cannot be changed. Hidden: field is not shown in clone form."
+msgstr "Editável: o campo pode ser alterado no formulário de clonagem. Somente leitura: o campo é visível, mas não pode ser alterado. Oculto: o campo não é exibido no formulário de clonagem."
+
+msgid "Checked: logs clone creation on the cloned ticket timeline. Unchecked: does not create this timeline log on cloned ticket."
+msgstr "Marcado: registra a criação da clonagem na linha do tempo do chamado clonado. Desmarcado: não cria esse log na linha do tempo do chamado clonado."
+
+msgid "Checked: logs clone reference on the source ticket timeline. Unchecked: does not create this timeline log on source ticket."
+msgstr "Marcado: registra a referência da clonagem na linha do tempo do chamado de origem. Desmarcado: não cria esse log na linha do tempo do chamado de origem."
+
+msgid "Checked: logs creation of link between source and cloned tickets. Unchecked: does not create timeline log for ticket link."
+msgstr "Marcado: registra a criação do vínculo entre chamado de origem e chamado clonado. Desmarcado: não cria log de linha do tempo para o vínculo entre chamados."
+
+msgid "Checked: logs informational activities created by plugin during cloning. Unchecked: does not create timeline log for informational activities."
+msgstr "Marcado: registra as atividades informativas criadas pelo plugin durante a clonagem. Desmarcado: não cria log de linha do tempo para atividades informativas."
+
+msgid "Checked: logs copied linked items and copied document links. Unchecked: does not create timeline log for copied items/documents."
+msgstr "Marcado: registra itens vinculados copiados e vínculos de documentos copiados. Desmarcado: não cria log de linha do tempo para itens/documentos copiados."
+
+msgid "Checked: logs copied actors from source ticket. Unchecked: does not create timeline log for copied actors."
+msgstr "Marcado: registra os atores copiados do chamado de origem. Desmarcado: não cria log de linha do tempo para atores copiados."
+
+msgid "Checked: logs clone failure on source ticket timeline. Unchecked: does not create timeline log for clone failures."
+msgstr "Marcado: registra falha de clonagem na linha do tempo do chamado de origem. Desmarcado: não cria log de linha do tempo para falhas de clonagem."
+
+msgid "Entity defines where this profile authorization applies."
+msgstr "Entidade define onde esta autorização de perfil será aplicada."
+
+msgid "Profile defines which profile receives this authorization in the selected entity scope."
+msgstr "Perfil define qual perfil receberá esta autorização no escopo de entidade selecionado."
+
+msgid "Recursive set to Yes applies authorization to child entities. Recursive set to No applies only to selected entity."
+msgstr "Recursivo definido como Sim aplica a autorização às entidades filhas. Recursivo definido como Não aplica somente à entidade selecionada."
+
+msgid "Remove profile"
+msgstr "Remover perfil"
+
+msgid "Permanently removes this profile authorization from the permissions matrix."
+msgstr "Remove permanentemente esta autorização de perfil da matriz de permissões."
+
+msgid "Checked: applies this rule. Unchecked: ignores this rule."
+msgstr "Marcado: aplica esta regra. Desmarcado: ignora esta regra."
+
+msgid "Checked: copies document/attachment links to cloned ticket. Unchecked: does not copy these links."
+msgstr "Marcado: copia os vínculos de documentos/anexos para o chamado clonado. Desmarcado: não copia esses vínculos."
+
+msgid "Checked: copies field \"%1$s\" to cloned ticket. Unchecked: does not copy this field."
+msgstr "Marcado: copia o campo \"%1$s\" para o chamado clonado. Desmarcado: não copia este campo."
+
+msgid "Checked: creates informational activities during cloning. Unchecked: does not create informational activities."
+msgstr "Marcado: cria atividades informativas durante a clonagem. Desmarcado: não cria atividades informativas."
+
+msgid "Checked: creates link between source and cloned tickets. Unchecked: does not create link between them."
+msgstr "Marcado: cria vínculo entre chamado de origem e chamado clonado. Desmarcado: não cria vínculo entre eles."
+
+msgid "Checked: does not copy related tickets from source ticket. Unchecked: allows copying related tickets."
+msgstr "Marcado: não copia chamados relacionados do chamado de origem. Desmarcado: permite copiar chamados relacionados."
+
+msgid "Copy"
+msgstr "Copiar"
+
+msgid "Copy document/attachment links to cloned ticket"
+msgstr "Copiar vínculos de documentos/anexos para o chamado clonado"
+
+msgid "Create informational activities during cloning"
+msgstr "Criar atividades informativas durante a clonagem"
+
+msgid "Force cloned ticket status to Assigned"
+msgstr "Forçar status do chamado clonado para Atribuído"
+
+msgid "Checked: cloned tickets are always created with status Assigned. Unchecked: status follows the clone copy policy for the Status field."
+msgstr "Marcado: chamados clonados são sempre criados com status Atribuído. Desmarcado: o status segue a política de cópia da clonagem para o campo Status."
+
+msgid "Do not copy related tickets"
+msgstr "Não copiar chamados relacionados"
+
+msgid "Global clone copy policy"
+msgstr "Política global de cópia da clonagem"
+
+msgid "Global rules"
+msgstr "Regras globais"
+
+msgid "Link source and cloned tickets"
+msgstr "Vincular chamado de origem e chamado clonado"
+
+msgid "Technical field: %1$s"
+msgstr "Campo técnico: %1$s"
+
+msgid "Ticket fields for cloning"
+msgstr "Campos do chamado para clonagem"
+
+msgid "When checked, the field is cloned. When unchecked, the field is not cloned."
+msgstr "Quando marcado, o campo é clonado. Quando desmarcado, o campo não é clonado."
+
+msgid "Checked: the field is blocked for editing in the form. Unchecked: the field is enabled for editing in the form. This policy only controls form editability and does not affect business rules."
+msgstr "Marcado: o campo fica bloqueado para edição no formulário. Desmarcado: o campo fica habilitado para edição no formulário. Esta política controla apenas a edição no formulário e não afeta regras de negócio."
+
+msgid "Checked: copies field %1$s to cloned ticket. Unchecked: does not copy this field."
+msgstr "Marcado: copia o campo %1$s para o chamado clonado. Desmarcado: não copia este campo."
+msgid "begin_waiting_date"
+msgstr "Início da espera"
+
+msgid "entities_id"
+msgstr "Entidade"
+
+msgid "is_deleted"
+msgstr "Excluído"
+
+msgid "itilcategories_id"
+msgstr "Categoria"
+
+msgid "locations_id"
+msgstr "Localização"
+
+msgid "ola_tto_begin_date"
+msgstr "Início da OLA para assumir"
+
+msgid "ola_ttr_begin_date"
+msgstr "Início da OLA para solução"
+
+msgid "ola_waiting_duration"
+msgstr "Duração de espera da OLA"
+
+msgid "olalevels_id_ttr"
+msgstr "Nível de OLA para solução"
+
+msgid "olas_id_tto"
+msgstr "OLA para assumir"
+
+msgid "olas_id_ttr"
+msgstr "OLA para solução"
+
+msgid "requesttypes_id"
+msgstr "Origem da requisição"
+
+msgid "sla_waiting_duration"
+msgstr "Duração de espera da SLA"
+
+msgid "slalevels_id_ttr"
+msgstr "Nível de SLA para solução"
+
+msgid "slas_id_tto"
+msgstr "SLA para assumir"
+
+msgid "slas_id_ttr"
+msgstr "SLA para solução"
+
+msgid "takeintoaccountdate"
+msgstr "Data de atendimento"
+
+msgid "users_id_recipient"
+msgstr "Destinatário"
+
+msgid "Informs the total time recorded in the ticket."
+msgstr "Informa o tempo total registrado no chamado."
+
+msgid "Indicates when the ticket entered waiting status."
+msgstr "Indica quando o chamado entrou em período de espera."
+
+msgid "Indicates the time when the ticket was closed."
+msgstr "Indica a hora em que o chamado foi fechado."
+
+msgid "Indicates the date when the ticket was closed."
+msgstr "Indica a data em que o chamado foi fechado."
+
+msgid "Defines the detailed description of the ticket."
+msgstr "Define a descrição detalhada do chamado."
+
+msgid "Indicates when the ticket was opened."
+msgstr "Indica quando o chamado foi aberto."
+
+msgid "Defines the entity responsible for the ticket."
+msgstr "Define a entidade responsável pelo chamado."
+
+msgid "Indicates the approval status of the ticket."
+msgstr "Indica a situação de aprovação do chamado."
+
+msgid "Defines the impact of the ticket."
+msgstr "Define o impacto do chamado."
+
+msgid "Defines the internal deadline to take ownership of the ticket."
+msgstr "Define o prazo interno para assumir o chamado."
+
+msgid "Defines the internal deadline to resolve the ticket."
+msgstr "Define o prazo interno para solucionar o chamado."
+
+msgid "Indicates whether the ticket is marked as deleted."
+msgstr "Indica se o chamado está marcado como excluído."
+
+msgid "Defines the category assigned to the ticket."
+msgstr "Define a categoria atribuída ao chamado."
+
+msgid "Defines the location associated with the ticket."
+msgstr "Define a localização associada ao chamado."
+
+msgid "Defines the title of the ticket."
+msgstr "Define o título do chamado."
+
+msgid "Indicates when OLA timing started for taking ownership of the ticket."
+msgstr "Indica quando começou a contagem da OLA para assumir o chamado."
+
+msgid "Indicates when OLA timing started for resolving the ticket."
+msgstr "Indica quando começou a contagem da OLA para solucionar o chamado."
+
+msgid "Informs the waiting time considered in the OLA calculation."
+msgstr "Informa o tempo de espera considerado no cálculo da OLA."
+
+msgid "Defines the OLA level applied to ticket resolution."
+msgstr "Define o nível de OLA aplicado à solução do chamado."
+
+msgid "Defines the OLA applied to the deadline for taking ownership of the ticket."
+msgstr "Define a OLA aplicada ao prazo para assumir o chamado."
+
+msgid "Defines the OLA applied to the deadline for resolving the ticket."
+msgstr "Define a OLA aplicada ao prazo para solucionar o chamado."
+
+msgid "Defines the priority of the ticket."
+msgstr "Define a prioridade do chamado."
+
+msgid "Defines the source through which the ticket was created."
+msgstr "Define a origem pela qual o chamado foi registrado."
+
+msgid "Informs the waiting time considered in the SLA calculation."
+msgstr "Informa o tempo de espera considerado no cálculo da SLA."
+
+msgid "Defines the SLA level applied to ticket resolution."
+msgstr "Define o nível de SLA aplicado à solução do chamado."
+
+msgid "Defines the SLA applied to the deadline for taking ownership of the ticket."
+msgstr "Define a SLA aplicada ao prazo para assumir o chamado."
+
+msgid "Defines the SLA applied to the deadline for resolving the ticket."
+msgstr "Define a SLA aplicada ao prazo para solucionar o chamado."
+
+msgid "Informs the elapsed time until the ticket was resolved."
+msgstr "Informa o tempo decorrido até a solução do chamado."
+
+msgid "Indicates when the ticket was resolved."
+msgstr "Indica quando o chamado foi solucionado."
+
+msgid "Indicates the current status of the ticket."
+msgstr "Indica a situação atual do chamado."
+
+msgid "Informs the elapsed time until the ticket was assigned."
+msgstr "Informa o tempo decorrido até a atribuição do chamado."
+
+msgid "Indicates when the ticket started to be effectively handled."
+msgstr "Indica quando o chamado passou a ser efetivamente atendido."
+
+msgid "Defines the deadline for taking ownership of the ticket."
+msgstr "Define o prazo para assumir o chamado."
+
+msgid "Defines the deadline for resolving the ticket."
+msgstr "Define o prazo para solucionar o chamado."
+
+msgid "Defines the type of the ticket."
+msgstr "Define o tipo do chamado."
+
+msgid "Defines the urgency of the ticket."
+msgstr "Define a urgência do chamado."
+
+msgid "Defines the main recipient of the ticket."
+msgstr "Define o destinatário principal do chamado."
+
+msgid "Indicates that the ticket requires at least one approval."
+msgstr "Indica que o chamado exige ao menos uma validação."
+
+msgid "Informs the total time the ticket remained in waiting status."
+msgstr "Informa o tempo total em que o chamado permaneceu em espera."
+
+msgid "Requester"
+msgstr "Requerente"
+
+msgid "Observer"
+msgstr "Observador"
+
+msgid "Assignee"
+msgstr "Atribuído"
+
+msgid "Checked: copies requester actors to the cloned ticket. Unchecked: does not copy requester actors."
+msgstr "Marcado: copia os atores requerentes para o chamado clonado. Desmarcado: não copia os atores requerentes."
+
+msgid "Checked: copies observer actors to the cloned ticket. Unchecked: does not copy observer actors."
+msgstr "Marcado: copia os atores observadores para o chamado clonado. Desmarcado: não copia os atores observadores."
+
+msgid "Checked: copies assigned actors to the cloned ticket. Unchecked: does not copy assigned actors."
+msgstr "Marcado: copia os atores atribuídos para o chamado clonado. Desmarcado: não copia os atores atribuídos."
+msgid "Enable cloning"
+msgstr "Habilitar clonagem"
+
+msgid "Checked: enables clone visibility and usage in this plugin, applying the profile matrix. Unchecked: clone tab and plugin clone controls stay hidden even when the plugin is active."
+msgstr "Marcado: habilita a visibilidade e o uso da clonagem neste plugin, aplicando a matriz de perfis. Desmarcado: a aba e os controles de clonagem do plugin ficam ocultos mesmo com o plugin ativo."
+
+msgid "Checked: plugin blocks actor fields by default and profile rules can explicitly allow each actor field. Unchecked: plugin does not enforce actor-field permissions and keeps core/other plugins rules."
+msgstr "Marcado: o plugin bloqueia os campos de atores por padrao e as regras de perfil podem liberar cada campo explicitamente. Desmarcado: o plugin nao aplica permissoes de campos de atores e mantem as regras do core/outros plugins."
+
+msgid "Linked items and assets"
+msgstr "Itens e ativos vinculados"
+
+msgid "Checked: copies linked items and assets from the source ticket. Unchecked: does not copy linked items and assets."
+msgstr "Marcado: copia os itens e ativos vinculados do chamado de origem. Desmarcado: nao copia os itens e ativos vinculados."
+
+msgid "Ticket documents and attachments"
+msgstr "Documentos e anexos do chamado"
+
+msgid "Checked: copies ticket-level document and attachment links to the cloned ticket. Unchecked: does not copy them."
+msgstr "Marcado: copia os vinculos de documentos e anexos do chamado para o clone. Desmarcado: nao copia esses vinculos."
+
+msgid "Follow-up attachments"
+msgstr "Anexos de acompanhamento"
+
+msgid "Checked: copies attachments linked to copied follow-ups. Unchecked: does not copy follow-up attachments."
+msgstr "Marcado: copia os anexos vinculados aos acompanhamentos copiados. Desmarcado: nao copia os anexos dos acompanhamentos."
+
+msgid "Task attachments"
+msgstr "Anexos de tarefas"
+
+msgid "Checked: copies attachments linked to copied tasks. Unchecked: does not copy task attachments."
+msgstr "Marcado: copia os anexos vinculados as tarefas copiadas. Desmarcado: nao copia os anexos das tarefas."
+
+msgid "Solution attachments"
+msgstr "Anexos de solucoes"
+
+msgid "Checked: copies attachments linked to copied solutions. Unchecked: does not copy solution attachments."
+msgstr "Marcado: copia os anexos vinculados as solucoes copiadas. Desmarcado: nao copia os anexos das solucoes."
+
+msgid "Approval attachments"
+msgstr "Anexos de aprovacoes"
+
+msgid "Checked: copies attachments linked to copied approvals. Unchecked: does not copy approval attachments."
+msgstr "Marcado: copia os anexos vinculados as aprovacoes copiadas. Desmarcado: nao copia os anexos das aprovacoes."
+
+msgid "Checked: creates a direct link between source and cloned tickets. Unchecked: does not create this link."
+msgstr "Marcado: cria um vinculo direto entre o chamado de origem e o clonado. Desmarcado: nao cria esse vinculo."
+
+msgid "Existing related tickets"
+msgstr "Chamados relacionados existentes"
+
+msgid "Checked: copies the ticket relationships that already exist on the source ticket. Unchecked: does not copy those relationships."
+msgstr "Marcado: copia os relacionamentos de chamados ja existentes no chamado de origem. Desmarcado: nao copia esses relacionamentos."
+
+msgid "Contracts"
+msgstr "Contratos"
+
+msgid "Checked: copies contracts linked to the source ticket. Unchecked: does not copy contracts."
+msgstr "Marcado: copia os contratos vinculados ao chamado de origem. Desmarcado: nao copia os contratos."
+
+msgid "Projects"
+msgstr "Projetos"
+
+msgid "Checked: copies projects linked to the source ticket. Unchecked: does not copy projects."
+msgstr "Marcado: copia os projetos vinculados ao chamado de origem. Desmarcado: nao copia os projetos."
+
+msgid "Problems"
+msgstr "Problemas"
+
+msgid "Checked: copies problems linked to the source ticket. Unchecked: does not copy problem links."
+msgstr "Marcado: copia os problemas vinculados ao chamado de origem. Desmarcado: nao copia os vinculos com problemas."
+
+msgid "Changes"
+msgstr "Mudancas"
+
+msgid "Checked: copies changes linked to the source ticket. Unchecked: does not copy change links."
+msgstr "Marcado: copia as mudancas vinculadas ao chamado de origem. Desmarcado: nao copia os vinculos com mudancas."
+
+msgid "Informational clone comments"
+msgstr "Comentarios informativos da clonagem"
+
+msgid "Checked: creates informational comments linking source and clone during cloning. Unchecked: does not create these comments."
+msgstr "Marcado: cria comentarios informativos ligando origem e clone durante a clonagem. Desmarcado: nao cria esses comentarios."
+
+msgid "Ticket follow-ups and comments"
+msgstr "Acompanhamentos e comentarios do chamado"
+
+msgid "Checked: copies follow-ups and comments visible on the source ticket. Unchecked: does not copy them."
+msgstr "Marcado: copia os acompanhamentos e comentarios visiveis no chamado de origem. Desmarcado: nao copia esses registros."
+
+msgid "Tasks"
+msgstr "Tarefas"
+
+msgid "Checked: copies tasks from the source ticket. Unchecked: does not copy tasks."
+msgstr "Marcado: copia as tarefas do chamado de origem. Desmarcado: nao copia as tarefas."
+
+msgid "Solutions"
+msgstr "Solucoes"
+
+msgid "Checked: copies solutions from the source ticket. Unchecked: does not copy solutions."
+msgstr "Marcado: copia as solucoes do chamado de origem. Desmarcado: nao copia as solucoes."
+
+msgid "Approvals"
+msgstr "Aprovacoes"
+
+msgid "Checked: copies approval requests and answers from the source ticket. Unchecked: does not copy approvals."
+msgstr "Marcado: copia as solicitacoes e respostas de aprovacao do chamado de origem. Desmarcado: nao copia as aprovacoes."
+
+msgid "Satisfaction survey"
+msgstr "Pesquisa de satisfacao"
+
+msgid "Checked: copies satisfaction survey data from the source ticket. Unchecked: does not copy satisfaction data."
+msgstr "Marcado: copia os dados da pesquisa de satisfacao do chamado de origem. Desmarcado: nao copia esses dados."
+
+msgid "Ticket"
+msgstr "Chamado"
+
+msgid "Actors"
+msgstr "Atores"
+
+msgid "Statistics and automatic dates"
+msgstr "Estatisticas e datas automaticas"
+
+msgid "Changes, problems, projects and relationships"
+msgstr "Mudancas, problemas, projetos e relacionamentos"
+
+msgid "Functional timeline"
+msgstr "Timeline funcional"
+
+msgid "Documents and attachments"
+msgstr "Documentos e anexos"
+
+msgid "When checked, the item is cloned. When unchecked, the item is not cloned."
+msgstr "Quando marcado, o item e clonado. Quando desmarcado, o item nao e clonado."
+
+msgid "Clone catalog"
+msgstr "Catalogo de clonagem"
+
+msgid "Mark all"
+msgstr "Marcar todos"
+
+msgid "Unmark all"
+msgstr "Desmarcar todos"
+
+msgid "Checked: all ticket properties are blocked for editing by default. Profile policy can explicitly allow each field for the logged profile. Unchecked: plugin does not block ticket properties by default. This control affects only form editability and does not change business rules."
+msgstr "Marcado: todas as propriedades do chamado ficam bloqueadas para edicao por padrao. A politica do perfil pode liberar cada campo explicitamente para o perfil logado. Desmarcado: o plugin nao bloqueia as propriedades do chamado por padrao. Este controle afeta apenas a editabilidade do formulario e nao altera regras de negocio."
+
+msgid "Checked: the field is enabled for editing for this profile. Unchecked: the field follows the global block rule. This policy only controls form editability and does not affect business rules."
+msgstr "Marcado: o campo fica liberado para edicao neste perfil. Desmarcado: o campo segue a regra global de bloqueio. Esta politica controla apenas a editabilidade do formulario e nao altera regras de negocio."
+
+msgid "Checked: plugin blocks requester, observer and assignee actor fields for all profiles by default. Profile matrix can explicitly allow each actor field. Unchecked: plugin ignores actor-field matrix and keeps core/other plugins rules."
+msgstr "Marcada: o plugin bloqueia por padrão os campos de Requerente, Observador e Atribuído para todos os perfis. A matriz por perfil pode liberar explicitamente cada campo. Desmarcada: o plugin ignora a matriz de campos de atores e mantém as regras do core/outros plugins."
