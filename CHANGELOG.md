@@ -62,13 +62,13 @@ Regra de rastreio por commit (obrigatória):
 
 ## [1.0.3] - 2026-04-15
 
-### PermissÃµes por perfil (PATCH)
-- Adiciona base de matriz de permissÃµes por perfil nas configuraÃ§Ãµes do plugin.
-- Inclui catÃ¡logo de permissÃµes com suporte a tooltip funcional por opÃ§Ã£o.
-- MantÃ©m fallback para comportamento legado quando nÃ£o houver configuraÃ§Ã£o de perfil.
+### Permissões por perfil (PATCH)
+- Adiciona base de matriz de permissões por perfil nas configurações do plugin.
+- Inclui catálogo de permissões com suporte a tooltip funcional por opção.
+- Mantém fallback para comportamento legado quando não houver configuração de perfil.
 
-### Ledger de commits da versÃ£o (100% rastreÃ¡vel)
-- `1.0.3+git.<pending>` - Estrutura matriz de permissÃµes por perfil no config do plugin
+### Ledger de commits da versão (100% rastreável)
+- `1.0.3+git.<pending>` - Estrutura matriz de permissões por perfil no config do plugin
 
 ## [1.0.2] - 2026-04-15
 

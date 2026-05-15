@@ -214,7 +214,7 @@ Cenarios:
 
 ### Regras de i18n (obrigatorio)
 - Qualquer novo texto de interface criado no plugin deve ter traducao no `locales/pt_BR.po`.
-- Nenhum rótulo/tooltip novo pode permanecer em ingles na interface.
+- Nenhum rÃ³tulo/tooltip novo pode permanecer em inglÃªs na interface.
 
 ### Default das propriedades do chamado
 - O valor padrao por propriedade na matriz de perfil e `Bloquear`.
@@ -222,12 +222,12 @@ Cenarios:
 
 ### Checklist anti-mojibake (obrigatorio)
 Antes de recompilar locale, executar:
-- `Select-String -Path plugins/ebenezerclone/locales/pt_BR.po -Pattern "Ã|Â|?"`
+- `Select-String -Path plugins/ebenezerclone/locales/pt_BR.po -Pattern "Ãƒ|Ã‚|\?"`
 
 Se houver ocorrencias:
 - Corrigir os `msgstr` afetados (preferir ASCII simples quando houver risco de encoding local).
 - Salvar o arquivo como UTF-8.
 - Recompilar `pt_BR.mo` com `msgfmt`.
 
-Regra mandatória:
-- Nao publicar alteracao de i18n com ocorrencias de `Ã`, `Â` ou `?` em `msgstr`.
+Regra mandatÃ³ria:
+- NÃ£o publicar alteraÃ§Ã£o de i18n com ocorrÃªncias de `Ãƒ`, `Ã‚` ou `?` em `msgstr`.
