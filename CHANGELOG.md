@@ -10,15 +10,38 @@ Regra de rastreio por commit (obrigatória):
   - `VERSAO_EFETIVA = <semver_release>+git.<short_sha>`
   - Exemplo: `1.0.1+git.6848b3f2`
 
+## [3.1.27] - 2026-07-09
+
+### Patch release
+- Remove do `README.md` a referencia aos guias locais GLPI nao versionados.
+- Mantem o apontamento desses guias exclusivamente no `AGENTS.md`, como regra operacional para o Codex.
+
+### Ledger de commits da versão (100% rastreável)
+- `3.1.27+git.<pending>` - keep local GLPI standards references only in AGENTS
+
+## [3.1.26] - 2026-07-09
+
+### Patch release
+- Adiciona referencias locais nao versionadas para Codex consultar padroes de desenvolvimento GLPI e plugins GLPI.
+- Protege os MDs gerados via `.gitignore`.
+- Formaliza no `AGENTS.md` o uso desses guias antes de alteracoes dependentes de padrao GLPI.
+
+### Ledger de commits da versão (100% rastreável)
+- `3.1.26+git.0777f45` - add local GLPI standards references for Codex
+
 ## [3.1.25] - 2026-07-09
 
 ### Patch release
 - Ajusta a metadata de compatibilidade GLPI para a linha `10.0.x` usando `requirements['glpi']` como fonte principal, sem `minGlpiVersion` legado.
 - Corrige o tratamento de falha em `Ticket::add()` para não chamar `Ticket::getErrors()` diretamente no GLPI 10.0.20.
+- Normaliza o `content` clonado pelo helper oficial `Glpi\Toolbox\Sanitizer` antes de `Ticket::add()`, preservando aspas simples, apostrofos e HTML esperado.
 - Mantém a correção restrita à observabilidade e ao erro controlado de clonagem, sem alterar regras de negócio ou campos copiados.
+- Alinha a rastreabilidade operacional da versão `3.1.25` e formaliza a política de bump SemVer por commit.
 
 ### Ledger de commits da versão (100% rastreável)
-- `3.1.25+git.<pending>` - fix clone add failure handling and GLPI 10.0 metadata
+- `3.1.25+git.82e9937` - fix clone add failure handling and GLPI 10.0 metadata
+- `3.1.25+git.3f889fd` - normalize cloned ticket content before Ticket::add to preserve quotes and HTML
+- `3.1.25+git.1b40c07` - align 3.1.25 traceability and local versioning rules
 
 ## [3.1.24] - 2026-06-02
 

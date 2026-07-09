@@ -2,7 +2,7 @@
 
 Plugin para GLPI 10.0.x que adiciona uma aba para clonar chamados com rastreabilidade entre ticket de origem e ticket novo.
 
-- Versão: 2.0.0
+- Versão: 3.1.27
 - Autor: Renato Valadares
 - Licença: GPL v2+
 

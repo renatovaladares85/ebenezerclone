@@ -20,9 +20,9 @@ cada commit no versionamento:
 4. Quando houver nova release (novo SemVer), iniciar novo bloco de ledger.
 
 Exemplo:
-- Release no `setup.php`: `2.0.0`
+- Release no `setup.php`: `3.1.27`
 - Commit: `6848b3f2`
-- Versão efetiva rastreável: `2.0.0+git.<short_sha>`
+- Versão efetiva rastreável: `3.1.27+git.<short_sha>`
 
 ## DRE principal
 - `2601300202` - Clonagem de chamados
@@ -84,6 +84,31 @@ Criterio: consolidacao de mudancas acumuladas de permissao e i18n com promocao d
 Arvore logica de entrega:
 - Consolidacao de release
   - HEAD (bump para 2.0.0 e alinhamento de artefatos de release)
+
+### 3.1.25 (patch release)
+Criterio: correcoes compatíveis para GLPI 10.0.20 na clonagem de chamados.
+
+Arvore logica de entrega:
+- Compatibilidade GLPI 10.0.x
+  - `82e9937` (metadata de compatibilidade e falha controlada de `Ticket::add()`)
+- Conteudo clonado
+  - `3f889fd` (normalizacao segura de `content` clonado para preservar aspas simples e HTML)
+
+### 3.1.26 (patch release)
+Criterio: documentacao operacional local para orientar Codex em padroes GLPI sem versionar artefatos gerados.
+
+Arvore logica de entrega:
+- Referencias locais GLPI
+  - `0777f45` (MDs locais gerados a partir de PDFs oficiais e ignorados pelo Git)
+- Governanca de uso
+  - `0777f45` (AGENTS aponta para os guias locais)
+
+### 3.1.27 (patch release)
+Criterio: ajuste de governanca para manter referencias locais GLPI apenas nas instrucoes do agente.
+
+Arvore logica de entrega:
+- Governanca de uso
+  - `HEAD` (remove referencia dos guias locais do README e mantem apontamento no AGENTS)
 ## Matriz de rastreio
 
 | Item | Identificador |
@@ -93,12 +118,16 @@ Arvore logica de entrega:
 | PRs relacionados | `#10`, `#11`, `#12` |
 | Merges relevantes em `main` | `3d0af347`, `085b0e4a`, `354035a9` |
 | Tags HML relacionadas | `v10.0.20-hml-003`, `v10.0.20-hml-004`, `v10.0.20-hml-005` |
-| Versão atual do plugin | `2.0.0` |
+| Versão atual do plugin | `3.1.27` |
 | Regra de build por commit | `<release>+git.<short_sha>` |
 
 ## Regra operacional para próximos commits
 Antes de concluir qualquer commit que altere comportamento, UI, i18n ou integração:
-1. Revisar se há impacto de versionamento (`patch`, `minor`, `major`).
-2. Atualizar `setup.php` quando houver nova release.
-3. Atualizar `CHANGELOG.md` com a entrada do commit no ledger da release.
-4. Atualizar esta matriz (`TRACEABILITY.md`) quando houver novo marco/tag/PR.
+1. Gerar commit para toda atualização de produto.
+2. Revisar o impacto de versionamento (`patch`, `minor`, `major`).
+3. Atualizar `setup.php` com o novo SemVer quando a atualização mudar produto.
+4. Usar `PATCH` para ajustes, correções e bug fixes.
+5. Usar `MINOR` para implementação pontual, funcionalidade prevista ou melhoria compatível.
+6. Usar `MAJOR` para mudança estrutural, arquitetura, layout amplo ou ruptura relevante.
+7. Atualizar `CHANGELOG.md` com a entrada do commit no ledger da release.
+8. Atualizar esta matriz (`TRACEABILITY.md`) quando houver novo marco/tag/PR.
