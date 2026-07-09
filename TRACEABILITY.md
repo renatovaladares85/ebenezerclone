@@ -20,9 +20,9 @@ cada commit no versionamento:
 4. Quando houver nova release (novo SemVer), iniciar novo bloco de ledger.
 
 Exemplo:
-- Release no `setup.php`: `3.1.25`
+- Release no `setup.php`: `3.1.26`
 - Commit: `6848b3f2`
-- Versão efetiva rastreável: `3.1.25+git.<short_sha>`
+- Versão efetiva rastreável: `3.1.26+git.<short_sha>`
 
 ## DRE principal
 - `2601300202` - Clonagem de chamados
@@ -93,6 +93,15 @@ Arvore logica de entrega:
   - `82e9937` (metadata de compatibilidade e falha controlada de `Ticket::add()`)
 - Conteudo clonado
   - `3f889fd` (normalizacao segura de `content` clonado para preservar aspas simples e HTML)
+
+### 3.1.26 (patch release)
+Criterio: documentacao operacional local para orientar Codex em padroes GLPI sem versionar artefatos gerados.
+
+Arvore logica de entrega:
+- Referencias locais GLPI
+  - `HEAD` (MDs locais gerados a partir de PDFs oficiais e ignorados pelo Git)
+- Governanca de uso
+  - `HEAD` (README e AGENTS apontam para os guias locais)
 ## Matriz de rastreio
 
 | Item | Identificador |
@@ -102,7 +111,7 @@ Arvore logica de entrega:
 | PRs relacionados | `#10`, `#11`, `#12` |
 | Merges relevantes em `main` | `3d0af347`, `085b0e4a`, `354035a9` |
 | Tags HML relacionadas | `v10.0.20-hml-003`, `v10.0.20-hml-004`, `v10.0.20-hml-005` |
-| Versão atual do plugin | `3.1.25` |
+| Versão atual do plugin | `3.1.26` |
 | Regra de build por commit | `<release>+git.<short_sha>` |
 
 ## Regra operacional para próximos commits
