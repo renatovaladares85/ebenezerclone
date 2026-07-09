@@ -73,6 +73,9 @@ msgstr "Registrar acompanhamentos informativos criados pelo plugin"
 msgid "Log copied linked items"
 msgstr "Registrar itens vinculados copiados"
 
+msgid "Log copied related ticket links"
+msgstr "Registrar vínculos de chamados relacionados copiados"
+
 msgid "Log copied actors"
 msgstr "Registrar atores copiados"
 
@@ -84,6 +87,12 @@ msgstr "Logs do histórico da linha do tempo"
 
 msgid "Clone failed for this ticket: %1$s"
 msgstr "A clonagem falhou para este chamado: %1$s"
+
+msgid "Failed to clone the ticket. Details: %1$s"
+msgstr "Falha ao clonar o chamado. Detalhes: %1$s"
+
+msgid "Unknown error returned by GLPI. Check php-errors.log and sql-errors.log."
+msgstr "Erro desconhecido retornado pelo GLPI. Verifique php-errors.log e sql-errors.log."
 
 msgid "Link created with source ticket #%1$s"
 msgstr "Vínculo criado com o chamado de origem #%1$s"
@@ -277,6 +286,9 @@ msgstr "Marcado: registra as atividades informativas criadas pelo plugin durante
 msgid "Checked: logs copied linked items and copied document links. Unchecked: does not create timeline log for copied items/documents."
 msgstr "Marcado: registra itens vinculados copiados e vínculos de documentos copiados. Desmarcado: não cria log de linha do tempo para itens/documentos copiados."
 
+msgid "Checked: logs copied related ticket links and copied document links. Unchecked: does not create timeline log for copied links/documents."
+msgstr "Marcado: registra vínculos de chamados relacionados copiados e vínculos de documentos copiados. Desmarcado: não cria log de linha do tempo para vínculos/documentos copiados."
+
 msgid "Checked: logs copied actors from source ticket. Unchecked: does not create timeline log for copied actors."
 msgstr "Marcado: registra os atores copiados do chamado de origem. Desmarcado: não cria log de linha do tempo para atores copiados."
 
@@ -313,8 +325,11 @@ msgstr "Marcado: cria atividades informativas durante a clonagem. Desmarcado: n�
 msgid "Checked: creates link between source and cloned tickets. Unchecked: does not create link between them."
 msgstr "Marcado: cria vínculo entre chamado de origem e chamado clonado. Desmarcado: não cria vínculo entre eles."
 
-msgid "Checked: does not copy related tickets from source ticket. Unchecked: allows copying related tickets."
-msgstr "Marcado: não copia chamados relacionados do chamado de origem. Desmarcado: permite copiar chamados relacionados."
+msgid "Checked: copies related tickets from source ticket. Unchecked: does not copy related tickets."
+msgstr "Marcado: copia chamados relacionados do chamado de origem. Desmarcado: não copia chamados relacionados."
+
+msgid "Checked: copies related ticket links from source ticket. Unchecked: does not copy related ticket links."
+msgstr "Marcado: copia vínculos de chamados relacionados do chamado de origem. Desmarcado: não copia vínculos de chamados relacionados."
 
 msgid "Copy"
 msgstr "Copiar"
@@ -331,8 +346,14 @@ msgstr "Forçar status do chamado clonado para Atribuído"
 msgid "Checked: cloned tickets are always created with status Assigned. Unchecked: status follows the clone copy policy for the Status field."
 msgstr "Marcado: chamados clonados são sempre criados com status Atribuído. Desmarcado: o status segue a política de cópia da clonagem para o campo Status."
 
-msgid "Do not copy related tickets"
-msgstr "Não copiar chamados relacionados"
+msgid "Copy related tickets"
+msgstr "Copiar chamados relacionados"
+
+msgid "Recalculate title from selected category"
+msgstr "Recalcular título a partir da categoria selecionada"
+
+msgid "Checked: title is always recalculated from selected category in clone form. Unchecked: title always keeps source ticket title."
+msgstr "Marcado: o título é sempre recalculado a partir da categoria selecionada no formulário de clonagem. Desmarcado: o título sempre mantém o título do chamado de origem."
 
 msgid "Global clone copy policy"
 msgstr "Política global de cópia da clonagem"
@@ -545,155 +566,60 @@ msgstr "Marcado: copia os atores observadores para o chamado clonado. Desmarcado
 
 msgid "Checked: copies assigned actors to the cloned ticket. Unchecked: does not copy assigned actors."
 msgstr "Marcado: copia os atores atribuídos para o chamado clonado. Desmarcado: não copia os atores atribuídos."
-msgid "Enable cloning"
-msgstr "Habilitar clonagem"
 
-msgid "Checked: enables clone visibility and usage in this plugin, applying the profile matrix. Unchecked: clone tab and plugin clone controls stay hidden even when the plugin is active."
-msgstr "Marcado: habilita a visibilidade e o uso da clonagem neste plugin, aplicando a matriz de perfis. Desmarcado: a aba e os controles de clonagem do plugin ficam ocultos mesmo com o plugin ativo."
+msgid "Copied %1$s related ticket link(s) from source ticket"
+msgstr "Copiados %1$s vínculo(s) de chamados relacionados do chamado de origem"
 
-msgid "Checked: plugin blocks actor fields by default and profile rules can explicitly allow each actor field. Unchecked: plugin does not enforce actor-field permissions and keeps core/other plugins rules."
-msgstr "Marcado: o plugin bloqueia os campos de atores por padrao e as regras de perfil podem liberar cada campo explicitamente. Desmarcado: o plugin nao aplica permissoes de campos de atores e mantem as regras do core/outros plugins."
+msgid "Title, Type, Category and Content are always copied from the cloning form and are not part of the configurable list."
+msgstr "Título, Tipo, Categoria e Conteúdo são sempre copiados a partir do formulário de clonagem e não fazem parte da lista configurável."
 
-msgid "Linked items and assets"
-msgstr "Itens e ativos vinculados"
-
-msgid "Checked: copies linked items and assets from the source ticket. Unchecked: does not copy linked items and assets."
-msgstr "Marcado: copia os itens e ativos vinculados do chamado de origem. Desmarcado: nao copia os itens e ativos vinculados."
-
-msgid "Ticket documents and attachments"
-msgstr "Documentos e anexos do chamado"
-
-msgid "Checked: copies ticket-level document and attachment links to the cloned ticket. Unchecked: does not copy them."
-msgstr "Marcado: copia os vinculos de documentos e anexos do chamado para o clone. Desmarcado: nao copia esses vinculos."
-
-msgid "Follow-up attachments"
-msgstr "Anexos de acompanhamento"
-
-msgid "Checked: copies attachments linked to copied follow-ups. Unchecked: does not copy follow-up attachments."
-msgstr "Marcado: copia os anexos vinculados aos acompanhamentos copiados. Desmarcado: nao copia os anexos dos acompanhamentos."
-
-msgid "Task attachments"
-msgstr "Anexos de tarefas"
-
-msgid "Checked: copies attachments linked to copied tasks. Unchecked: does not copy task attachments."
-msgstr "Marcado: copia os anexos vinculados as tarefas copiadas. Desmarcado: nao copia os anexos das tarefas."
-
-msgid "Solution attachments"
-msgstr "Anexos de solucoes"
-
-msgid "Checked: copies attachments linked to copied solutions. Unchecked: does not copy solution attachments."
-msgstr "Marcado: copia os anexos vinculados as solucoes copiadas. Desmarcado: nao copia os anexos das solucoes."
-
-msgid "Approval attachments"
-msgstr "Anexos de aprovacoes"
-
-msgid "Checked: copies attachments linked to copied approvals. Unchecked: does not copy approval attachments."
-msgstr "Marcado: copia os anexos vinculados as aprovacoes copiadas. Desmarcado: nao copia os anexos das aprovacoes."
-
-msgid "Checked: creates a direct link between source and cloned tickets. Unchecked: does not create this link."
-msgstr "Marcado: cria um vinculo direto entre o chamado de origem e o clonado. Desmarcado: nao cria esse vinculo."
-
-msgid "Existing related tickets"
-msgstr "Chamados relacionados existentes"
-
-msgid "Checked: copies the ticket relationships that already exist on the source ticket. Unchecked: does not copy those relationships."
-msgstr "Marcado: copia os relacionamentos de chamados ja existentes no chamado de origem. Desmarcado: nao copia esses relacionamentos."
-
-msgid "Contracts"
-msgstr "Contratos"
-
-msgid "Checked: copies contracts linked to the source ticket. Unchecked: does not copy contracts."
-msgstr "Marcado: copia os contratos vinculados ao chamado de origem. Desmarcado: nao copia os contratos."
-
-msgid "Projects"
-msgstr "Projetos"
-
-msgid "Checked: copies projects linked to the source ticket. Unchecked: does not copy projects."
-msgstr "Marcado: copia os projetos vinculados ao chamado de origem. Desmarcado: nao copia os projetos."
-
-msgid "Problems"
-msgstr "Problemas"
-
-msgid "Checked: copies problems linked to the source ticket. Unchecked: does not copy problem links."
-msgstr "Marcado: copia os problemas vinculados ao chamado de origem. Desmarcado: nao copia os vinculos com problemas."
-
-msgid "Changes"
-msgstr "Mudancas"
-
-msgid "Checked: copies changes linked to the source ticket. Unchecked: does not copy change links."
-msgstr "Marcado: copia as mudancas vinculadas ao chamado de origem. Desmarcado: nao copia os vinculos com mudancas."
-
-msgid "Informational clone comments"
-msgstr "Comentarios informativos da clonagem"
-
-msgid "Checked: creates informational comments linking source and clone during cloning. Unchecked: does not create these comments."
-msgstr "Marcado: cria comentarios informativos ligando origem e clone durante a clonagem. Desmarcado: nao cria esses comentarios."
-
-msgid "Ticket follow-ups and comments"
-msgstr "Acompanhamentos e comentarios do chamado"
-
-msgid "Checked: copies follow-ups and comments visible on the source ticket. Unchecked: does not copy them."
-msgstr "Marcado: copia os acompanhamentos e comentarios visiveis no chamado de origem. Desmarcado: nao copia esses registros."
-
-msgid "Tasks"
-msgstr "Tarefas"
-
-msgid "Checked: copies tasks from the source ticket. Unchecked: does not copy tasks."
-msgstr "Marcado: copia as tarefas do chamado de origem. Desmarcado: nao copia as tarefas."
-
-msgid "Solutions"
-msgstr "Solucoes"
-
-msgid "Checked: copies solutions from the source ticket. Unchecked: does not copy solutions."
-msgstr "Marcado: copia as solucoes do chamado de origem. Desmarcado: nao copia as solucoes."
-
-msgid "Approvals"
-msgstr "Aprovacoes"
-
-msgid "Checked: copies approval requests and answers from the source ticket. Unchecked: does not copy approvals."
-msgstr "Marcado: copia as solicitacoes e respostas de aprovacao do chamado de origem. Desmarcado: nao copia as aprovacoes."
-
-msgid "Satisfaction survey"
-msgstr "Pesquisa de satisfacao"
-
-msgid "Checked: copies satisfaction survey data from the source ticket. Unchecked: does not copy satisfaction data."
-msgstr "Marcado: copia os dados da pesquisa de satisfacao do chamado de origem. Desmarcado: nao copia esses dados."
-
-msgid "Ticket"
-msgstr "Chamado"
-
-msgid "Actors"
-msgstr "Atores"
-
-msgid "Statistics and automatic dates"
-msgstr "Estatisticas e datas automaticas"
-
-msgid "Changes, problems, projects and relationships"
-msgstr "Mudancas, problemas, projetos e relacionamentos"
-
-msgid "Functional timeline"
-msgstr "Timeline funcional"
-
-msgid "Documents and attachments"
-msgstr "Documentos e anexos"
-
-msgid "When checked, the item is cloned. When unchecked, the item is not cloned."
-msgstr "Quando marcado, o item e clonado. Quando desmarcado, o item nao e clonado."
-
-msgid "Clone catalog"
-msgstr "Catalogo de clonagem"
-
-msgid "Mark all"
+msgid "Check all"
 msgstr "Marcar todos"
 
-msgid "Unmark all"
+msgid "Uncheck all"
 msgstr "Desmarcar todos"
 
-msgid "Checked: all ticket properties are blocked for editing by default. Profile policy can explicitly allow each field for the logged profile. Unchecked: plugin does not block ticket properties by default. This control affects only form editability and does not change business rules."
-msgstr "Marcado: todas as propriedades do chamado ficam bloqueadas para edicao por padrao. A politica do perfil pode liberar cada campo explicitamente para o perfil logado. Desmarcado: o plugin nao bloqueia as propriedades do chamado por padrao. Este controle afeta apenas a editabilidade do formulario e nao altera regras de negocio."
+msgid "Clone authorization by profile and entity"
+msgstr "Autorização de clonagem por perfil e entidade"
 
-msgid "Checked: the field is enabled for editing for this profile. Unchecked: the field follows the global block rule. This policy only controls form editability and does not affect business rules."
-msgstr "Marcado: o campo fica liberado para edicao neste perfil. Desmarcado: o campo segue a regra global de bloqueio. Esta politica controla apenas a editabilidade do formulario e nao altera regras de negocio."
+msgid "Only configured profile/entity combinations can see and execute ticket cloning. Recursivity applies to child entities."
+msgstr "Apenas combinações configuradas de perfil/entidade podem visualizar e executar a clonagem de chamados. A recursividade se aplica às entidades filhas."
 
-msgid "Checked: plugin blocks requester, observer and assignee actor fields for all profiles by default. Profile matrix can explicitly allow each actor field. Unchecked: plugin ignores actor-field matrix and keeps core/other plugins rules."
-msgstr "Marcada: o plugin bloqueia por padrão os campos de Requerente, Observador e Atribuído para todos os perfis. A matriz por perfil pode liberar explicitamente cada campo. Desmarcada: o plugin ignora a matriz de campos de atores e mantém as regras do core/outros plugins."
+msgid "Profile"
+msgstr "Perfil"
+
+msgid "Entity"
+msgstr "Entidade"
+
+msgid "Recursive"
+msgstr "Recursivo"
+
+msgid "Remove"
+msgstr "Remover"
+
+msgid "Add authorization"
+msgstr "Adicionar autorização"
+
+msgid "Invalid clone authorization payload. Previous settings were preserved."
+msgstr "Payload de autorização de clonagem inválido. As configurações anteriores foram preservadas."
+
+msgid "Root entity"
+msgstr "Entidade raiz"
+
+msgid "Select a profile before adding a new authorization row."
+msgstr "Selecione um perfil antes de adicionar uma nova linha de autorização."
+
+msgid "Copy related items (devices)"
+msgstr "Copiar itens relacionados (dispositivos)"
+
+msgid "Checked: copies items from the Items tab to the cloned ticket. Unchecked: does not copy these items."
+msgstr "Marcado: copia os itens da aba Itens para o chamado clonado. Desmarcado: não copia esses itens."
+
+msgid "Log copied links and related items"
+msgstr "Registrar links e itens relacionados copiados"
+
+msgid "Checked: logs copied related ticket links, related items, and copied document links. Unchecked: does not create timeline log for copied links/items/documents."
+msgstr "Marcado: registra vínculos de chamados relacionados, itens relacionados e vínculos de documentos copiados. Desmarcado: não cria registro na linha do tempo para links, itens ou documentos copiados."
+
+msgid "Copied %1$s related item(s) from source ticket"
+msgstr "Copiados %1$s item(ns) relacionados do chamado de origem"

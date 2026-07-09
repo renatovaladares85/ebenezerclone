@@ -10,31 +10,13 @@ class PluginEbenezercloneConfig extends CommonDBTM
     public const MODE_READONLY = 'readonly';
     public const MODE_HIDDEN = 'hidden';
     public const CONFIG_KEY_PROFILE_PERMISSION_MATRIX = 'profile_permission_matrix';
-    public const CONFIG_KEY_GLOBAL_PERMISSION_POLICIES = 'global_permission_policies';
-    public const CONFIG_KEY_PERMISSION_GROUP_TOGGLES = 'permission_group_toggles';
-    public const CONFIG_KEY_GLOBAL_BLOCK_CLONE_ACTIONS = 'global_block_clone_actions';
-    public const CONFIG_KEY_GLOBAL_BLOCK_ACTOR_FIELDS = 'global_block_actor_fields';
-    public const CONFIG_KEY_GLOBAL_BLOCK_ALL_PROPERTIES = 'global_block_all_properties';
-    public const CONFIG_KEY_ALLOW_EMPTY_CATEGORY_EDITION = 'allow_empty_category_edition';
-    public const CONFIG_KEY_TICKET_PROPERTY_PROFILE_POLICIES = 'ticket_property_profile_policies';
     public const CONFIG_KEY_GLOBAL_CLONE_COPY_POLICIES = 'global_clone_copy_policies';
     public const CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE = 'force_assigned_status_on_clone';
+    public const CONFIG_KEY_RECALCULATE_TITLE_FROM_CATEGORY = 'recalculate_title_from_category';
 
     public const PERMISSION_CLONE_TICKET = 'clone_ticket';
-    public const PERMISSION_TICKET_CLONE_ACTION = 'ticket_clone_action';
-    public const PERMISSION_MASSIVE_CLONE = 'massive_clone';
-    public const PERMISSION_EDIT_REQUESTER = 'edit_requester';
-    public const PERMISSION_EDIT_OBSERVER = 'edit_observer';
-    public const PERMISSION_EDIT_ASSIGNED = 'edit_assigned';
-    public const PROPERTY_POLICY_BLOCK = 'block';
-    public const PROPERTY_POLICY_ALLOW = 'allow';
-    public const PROPERTY_POLICY_IGNORE = 'ignore';
     public const COPY_POLICY_COPY = 'copy';
     public const COPY_POLICY_IGNORE = 'ignore';
-    public const PERMISSION_MODE_PROFILE_ONLY = 'profile_only';
-    public const PERMISSION_MODE_GLOBAL_PROFILE_OVERRIDE = 'global_profile_override';
-    public const PERMISSION_MODE_GLOBAL_DEFAULT_ALLOW_PROFILE_BLOCK = 'global_default_allow_profile_block';
-    public const PERMISSION_MODE_GLOBAL_BLOCK_PROFILE_ALLOW = 'global_block_profile_allow';
 
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
     {
@@ -59,7 +41,6 @@ class PluginEbenezercloneConfig extends CommonDBTM
             'field_name_mode' => self::MODE_READONLY,
             'field_type_mode' => self::MODE_EDITABLE,
             'field_category_mode' => self::MODE_EDITABLE,
-            'field_content_mode' => self::MODE_EDITABLE,
             'remove_author_default' => 1,
             'timeline_log_clone_created' => 1,
             'timeline_log_clone_source' => 1,
@@ -68,15 +49,8 @@ class PluginEbenezercloneConfig extends CommonDBTM
             'timeline_log_items_copied' => 0,
             'timeline_log_actors_copied' => 0,
             'timeline_log_clone_failure' => 1,
-            self::CONFIG_KEY_GLOBAL_BLOCK_CLONE_ACTIONS => 0,
-            self::CONFIG_KEY_GLOBAL_BLOCK_ACTOR_FIELDS => 0,
-            self::CONFIG_KEY_GLOBAL_BLOCK_ALL_PROPERTIES => 1,
-            self::CONFIG_KEY_ALLOW_EMPTY_CATEGORY_EDITION => 1,
             self::CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE => 1,
-            self::CONFIG_KEY_PROFILE_PERMISSION_MATRIX => '{}',
-            self::CONFIG_KEY_GLOBAL_PERMISSION_POLICIES => '{}',
-            self::CONFIG_KEY_PERMISSION_GROUP_TOGGLES => '{}',
-            self::CONFIG_KEY_TICKET_PROPERTY_PROFILE_POLICIES => '{}',
+            self::CONFIG_KEY_RECALCULATE_TITLE_FROM_CATEGORY => 0,
             self::CONFIG_KEY_GLOBAL_CLONE_COPY_POLICIES => '{}',
         ];
     }
@@ -88,99 +62,12 @@ class PluginEbenezercloneConfig extends CommonDBTM
                 'label' => t_ebenezerclone('Clone ticket'),
                 'tooltip' => t_ebenezerclone('Allows creating a cloned ticket from the clone tab. If disabled, the profile cannot execute clone in this plugin.'),
             ],
-            self::PERMISSION_TICKET_CLONE_ACTION => [
-                'label' => t_ebenezerclone('Clone ticket action'),
-                'tooltip' => t_ebenezerclone('Allows the Clone action in ticket actions menu. If disabled, clone action is hidden in ticket actions.'),
-            ],
-            self::PERMISSION_MASSIVE_CLONE => [
-                'label' => t_ebenezerclone('Massive clone action'),
-                'tooltip' => t_ebenezerclone('Allows the native massive/single clone action in ticket listings. If disabled, clone actions are hidden in massive action menus.'),
-            ],
-            self::PERMISSION_EDIT_REQUESTER => [
-                'label' => t_ebenezerclone('Edit requester'),
-                'tooltip' => t_ebenezerclone('Allows editing requester actor in tickets. If disabled, requester changes are blocked for this profile when global actor block is enabled.'),
-            ],
-            self::PERMISSION_EDIT_OBSERVER => [
-                'label' => t_ebenezerclone('Edit observer'),
-                'tooltip' => t_ebenezerclone('Allows editing observer actor in tickets. If disabled, observer changes are blocked for this profile when global actor block is enabled.'),
-            ],
-            self::PERMISSION_EDIT_ASSIGNED => [
-                'label' => t_ebenezerclone('Edit assignee'),
-                'tooltip' => t_ebenezerclone('Allows editing assigned actor in tickets. If disabled, assignee changes are blocked for this profile when global actor block is enabled.'),
-            ],
         ];
     }
 
     public static function getSupportedPermissionKeys(): array
     {
         return array_keys(self::getPermissionDefinitions());
-    }
-
-    public static function getPermissionGroups(): array
-    {
-        return [
-            'clone' => [
-                'label' => t_ebenezerclone('Enable cloning'),
-                'tooltip' => t_ebenezerclone('Checked: enables clone visibility and usage in this plugin, applying the profile matrix. Unchecked: clone tab and plugin clone controls stay hidden even when the plugin is active.'),
-                'permissions' => [
-                    self::PERMISSION_CLONE_TICKET,
-                    self::PERMISSION_TICKET_CLONE_ACTION,
-                    self::PERMISSION_MASSIVE_CLONE,
-                ],
-            ],
-            'assignment' => [
-                'label' => t_ebenezerclone('Assignment controls'),
-                'tooltip' => t_ebenezerclone('Checked: plugin blocks actor fields by default and profile rules can explicitly allow each actor field. Unchecked: plugin does not enforce actor-field permissions and keeps core/other plugins rules.'),
-                'permissions' => [
-                    self::PERMISSION_EDIT_REQUESTER,
-                    self::PERMISSION_EDIT_OBSERVER,
-                    self::PERMISSION_EDIT_ASSIGNED,
-                ],
-            ],
-        ];
-    }
-
-    public static function getPermissionModes(): array
-    {
-        return [
-            self::PERMISSION_CLONE_TICKET => self::PERMISSION_MODE_PROFILE_ONLY,
-            self::PERMISSION_TICKET_CLONE_ACTION => self::PERMISSION_MODE_PROFILE_ONLY,
-            self::PERMISSION_MASSIVE_CLONE => self::PERMISSION_MODE_PROFILE_ONLY,
-            self::PERMISSION_EDIT_REQUESTER => self::PERMISSION_MODE_PROFILE_ONLY,
-            self::PERMISSION_EDIT_OBSERVER => self::PERMISSION_MODE_PROFILE_ONLY,
-            self::PERMISSION_EDIT_ASSIGNED => self::PERMISSION_MODE_PROFILE_ONLY,
-        ];
-    }
-
-    private static function getPermissionMode(string $permission_key): string
-    {
-        return self::getPermissionModes()[$permission_key] ?? self::PERMISSION_MODE_GLOBAL_PROFILE_OVERRIDE;
-    }
-
-    private static function canPermissionBeConfiguredGlobally(string $permission_key): bool
-    {
-        return self::getPermissionMode($permission_key) !== self::PERMISSION_MODE_PROFILE_ONLY;
-    }
-
-    private static function getPermissionGlobalDefault(string $permission_key): int
-    {
-        if (self::getPermissionMode($permission_key) === self::PERMISSION_MODE_GLOBAL_DEFAULT_ALLOW_PROFILE_BLOCK) {
-            return 1;
-        }
-
-        return 0;
-    }
-
-    private static function getPermissionGroupMap(): array
-    {
-        $map = [];
-        foreach (self::getPermissionGroups() as $group_key => $group_definition) {
-            foreach ((array) ($group_definition['permissions'] ?? []) as $permission_key) {
-                $map[(string) $permission_key] = (string) $group_key;
-            }
-        }
-
-        return $map;
     }
 
     public static function getAvailableProfiles(): array
@@ -191,7 +78,7 @@ class PluginEbenezercloneConfig extends CommonDBTM
         $profiles = [];
         $iterator = $DB->request([
             'FROM'  => 'glpi_profiles',
-            'ORDER' => ['name' => 'ASC'],
+            'ORDER' => 'name',
         ]);
 
         foreach ($iterator as $row) {
@@ -203,7 +90,69 @@ class PluginEbenezercloneConfig extends CommonDBTM
             $profiles[$profile_id] = (string) ($row['name'] ?? ('#' . $profile_id));
         }
 
+        if (class_exists('Collator')) {
+            $locale = (string) ($_SESSION['glpilanguage'] ?? 'en_US');
+            $collator = new Collator($locale);
+            uasort($profiles, static function (string $a, string $b) use ($collator): int {
+                return $collator->compare($a, $b);
+            });
+        } else {
+            natcasesort($profiles);
+        }
+
         return $profiles;
+    }
+
+    public static function getAvailableEntities(): array
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        $root_entity_label = t_ebenezerclone('Root entity');
+        $root_iterator = $DB->request([
+            'FROM'  => 'glpi_entities',
+            'WHERE' => [
+                'id' => 0,
+            ],
+            'LIMIT' => 1,
+        ]);
+        foreach ($root_iterator as $root_row) {
+            $root_label = trim((string) ($root_row['completename'] ?? ''));
+            if ($root_label === '') {
+                $root_label = trim((string) ($root_row['name'] ?? ''));
+            }
+            if ($root_label !== '') {
+                $root_entity_label = $root_label;
+            }
+            break;
+        }
+
+        $entities = [
+            0 => $root_entity_label,
+        ];
+
+        $iterator = $DB->request([
+            'FROM'  => 'glpi_entities',
+            'ORDER' => 'completename',
+        ]);
+
+        foreach ($iterator as $row) {
+            $entity_id = (int) ($row['id'] ?? 0);
+            if ($entity_id <= 0) {
+                continue;
+            }
+
+            $label = trim((string) ($row['completename'] ?? ''));
+            if ($label === '') {
+                $label = trim((string) ($row['name'] ?? ''));
+            }
+            if ($label === '') {
+                $label = '#' . $entity_id;
+            }
+            $entities[$entity_id] = $label;
+        }
+
+        return $entities;
     }
 
     public static function getProfileAuthorizations(): array
@@ -218,51 +167,6 @@ class PluginEbenezercloneConfig extends CommonDBTM
         return $scope_data['permissions'];
     }
 
-    public static function getGlobalPermissionPolicies(): array
-    {
-        $scope_data = self::getPermissionScopeData();
-        return $scope_data['global_policies'];
-    }
-
-    public static function getPermissionGroupToggles(): array
-    {
-        $scope_data = self::getPermissionScopeData();
-        return $scope_data['group_toggles'];
-    }
-
-    public static function getTicketPropertyDefinitions(): array
-    {
-        return [
-            'date'            => ['label' => __('Opening date')],
-            'time_to_resolve' => ['label' => __('Time to resolve')],
-            'solvedate'       => ['label' => __('Resolution date')],
-            'closedate'       => ['label' => __('Closing date')],
-            'type'            => ['label' => _n('Type', 'Types', 1)],
-            'itilcategories_id' => ['label' => _n('Category', 'Categories', 1)],
-            'status'          => ['label' => __('Status')],
-            'requesttypes_id' => ['label' => __('Request source')],
-            'urgency'         => ['label' => __('Urgency')],
-            'impact'          => ['label' => __('Impact')],
-            'priority'        => ['label' => __('Priority')],
-            'locations_id'    => ['label' => __('Location')],
-            '_contracts_id'   => ['label' => __('Contract')],
-            'actiontime'      => ['label' => __('Total duration')],
-            'slas_id_ttr'     => ['label' => t_ebenezerclone('SLA Time to resolve')],
-            'slas_id_tto'     => ['label' => t_ebenezerclone('SLA Time to own')],
-            'olas_id_ttr'     => ['label' => t_ebenezerclone('OLA Time to resolve')],
-            'olas_id_tto'     => ['label' => t_ebenezerclone('OLA Time to own')],
-            'time_to_own'     => ['label' => __('Time to own')],
-        ];
-    }
-
-    public static function getTicketPropertyPolicyOptions(): array
-    {
-        return [
-            self::PROPERTY_POLICY_BLOCK  => t_ebenezerclone('Block'),
-            self::PROPERTY_POLICY_ALLOW  => t_ebenezerclone('Allow'),
-        ];
-    }
-
     public static function getCloneCopyDefinitions(): array
     {
         $field_definitions = [];
@@ -271,7 +175,6 @@ class PluginEbenezercloneConfig extends CommonDBTM
             $field_definitions[$field_key] = [
                 'label'   => $field_label,
                 'kind'    => 'field',
-                'section' => self::getCloneCopyFieldSection($field_key),
                 'tooltip' => $field_tooltips[$field_key]
                     ?? sprintf(
                         t_ebenezerclone('Checked: copies field %1$s to cloned ticket. Unchecked: does not copy this field.'),
@@ -286,144 +189,45 @@ class PluginEbenezercloneConfig extends CommonDBTM
                 'actor_requester' => [
                     'label'   => t_ebenezerclone('Requester'),
                     'kind'    => 'field',
-                    'section' => 'actors',
                     'tooltip' => t_ebenezerclone('Checked: copies requester actors to the cloned ticket. Unchecked: does not copy requester actors.'),
                 ],
                 'actor_observer' => [
                     'label'   => t_ebenezerclone('Observer'),
                     'kind'    => 'field',
-                    'section' => 'actors',
                     'tooltip' => t_ebenezerclone('Checked: copies observer actors to the cloned ticket. Unchecked: does not copy observer actors.'),
                 ],
                 'actor_assign' => [
                     'label'   => t_ebenezerclone('Assignee'),
                     'kind'    => 'field',
-                    'section' => 'actors',
                     'tooltip' => t_ebenezerclone('Checked: copies assigned actors to the cloned ticket. Unchecked: does not copy assigned actors.'),
                 ],
-                'items' => [
-                    'label'   => t_ebenezerclone('Linked items and assets'),
-                    'kind'    => 'component',
-                    'section' => 'relationships',
-                    'tooltip' => t_ebenezerclone('Checked: copies linked items and assets from the source ticket. Unchecked: does not copy linked items and assets.'),
+                'items'           => [
+                    'label' => t_ebenezerclone('Copy related tickets'),
+                    'kind'  => 'component',
+                    'tooltip' => t_ebenezerclone('Checked: copies related ticket links from source ticket. Unchecked: does not copy related ticket links.'),
                 ],
-                'documents' => [
-                    'label'   => t_ebenezerclone('Ticket documents and attachments'),
-                    'kind'    => 'component',
-                    'section' => 'documents',
-                    'tooltip' => t_ebenezerclone('Checked: copies ticket-level document and attachment links to the cloned ticket. Unchecked: does not copy them.'),
+                'related_items'   => [
+                    'label' => t_ebenezerclone('Copy related items (devices)'),
+                    'kind'  => 'component',
+                    'tooltip' => t_ebenezerclone('Checked: copies items from the Items tab to the cloned ticket. Unchecked: does not copy these items.'),
                 ],
-                'followup_documents' => [
-                    'label'   => t_ebenezerclone('Follow-up attachments'),
-                    'kind'    => 'component',
-                    'section' => 'documents',
-                    'tooltip' => t_ebenezerclone('Checked: copies attachments linked to copied follow-ups. Unchecked: does not copy follow-up attachments.'),
+                'documents'       => [
+                    'label' => t_ebenezerclone('Copy document/attachment links to cloned ticket'),
+                    'kind'  => 'component',
+                    'tooltip' => t_ebenezerclone('Checked: copies document/attachment links to cloned ticket. Unchecked: does not copy these links.'),
                 ],
-                'task_documents' => [
-                    'label'   => t_ebenezerclone('Task attachments'),
-                    'kind'    => 'component',
-                    'section' => 'documents',
-                    'tooltip' => t_ebenezerclone('Checked: copies attachments linked to copied tasks. Unchecked: does not copy task attachments.'),
+                'ticket_link'     => [
+                    'label' => t_ebenezerclone('Link source and cloned tickets'),
+                    'kind'  => 'component',
+                    'tooltip' => t_ebenezerclone('Checked: creates link between source and cloned tickets. Unchecked: does not create link between them.'),
                 ],
-                'solution_documents' => [
-                    'label'   => t_ebenezerclone('Solution attachments'),
-                    'kind'    => 'component',
-                    'section' => 'documents',
-                    'tooltip' => t_ebenezerclone('Checked: copies attachments linked to copied solutions. Unchecked: does not copy solution attachments.'),
-                ],
-                'validation_documents' => [
-                    'label'   => t_ebenezerclone('Approval attachments'),
-                    'kind'    => 'component',
-                    'section' => 'documents',
-                    'tooltip' => t_ebenezerclone('Checked: copies attachments linked to copied approvals. Unchecked: does not copy approval attachments.'),
-                ],
-                'ticket_link' => [
-                    'label'   => t_ebenezerclone('Link source and cloned tickets'),
-                    'kind'    => 'component',
-                    'section' => 'relationships',
-                    'tooltip' => t_ebenezerclone('Checked: creates a direct link between source and cloned tickets. Unchecked: does not create this link.'),
-                ],
-                'ticket_relations' => [
-                    'label'   => t_ebenezerclone('Existing related tickets'),
-                    'kind'    => 'component',
-                    'section' => 'relationships',
-                    'tooltip' => t_ebenezerclone('Checked: copies the ticket relationships that already exist on the source ticket. Unchecked: does not copy those relationships.'),
-                ],
-                'contracts' => [
-                    'label'   => t_ebenezerclone('Contracts'),
-                    'kind'    => 'component',
-                    'section' => 'relationships',
-                    'tooltip' => t_ebenezerclone('Checked: copies contracts linked to the source ticket. Unchecked: does not copy contracts.'),
-                ],
-                'projects' => [
-                    'label'   => t_ebenezerclone('Projects'),
-                    'kind'    => 'component',
-                    'section' => 'relationships',
-                    'tooltip' => t_ebenezerclone('Checked: copies projects linked to the source ticket. Unchecked: does not copy projects.'),
-                ],
-                'problem_links' => [
-                    'label'   => t_ebenezerclone('Problems'),
-                    'kind'    => 'component',
-                    'section' => 'relationships',
-                    'tooltip' => t_ebenezerclone('Checked: copies problems linked to the source ticket. Unchecked: does not copy problem links.'),
-                ],
-                'change_links' => [
-                    'label'   => t_ebenezerclone('Changes'),
-                    'kind'    => 'component',
-                    'section' => 'relationships',
-                    'tooltip' => t_ebenezerclone('Checked: copies changes linked to the source ticket. Unchecked: does not copy change links.'),
-                ],
-                'followups' => [
-                    'label'   => t_ebenezerclone('Informational clone comments'),
-                    'kind'    => 'component',
-                    'section' => 'timeline',
-                    'tooltip' => t_ebenezerclone('Checked: creates informational comments linking source and clone during cloning. Unchecked: does not create these comments.'),
-                ],
-                'followup_history' => [
-                    'label'   => t_ebenezerclone('Ticket follow-ups and comments'),
-                    'kind'    => 'component',
-                    'section' => 'timeline',
-                    'tooltip' => t_ebenezerclone('Checked: copies follow-ups and comments visible on the source ticket. Unchecked: does not copy them.'),
-                ],
-                'tasks' => [
-                    'label'   => t_ebenezerclone('Tasks'),
-                    'kind'    => 'component',
-                    'section' => 'timeline',
-                    'tooltip' => t_ebenezerclone('Checked: copies tasks from the source ticket. Unchecked: does not copy tasks.'),
-                ],
-                'solutions' => [
-                    'label'   => t_ebenezerclone('Solutions'),
-                    'kind'    => 'component',
-                    'section' => 'timeline',
-                    'tooltip' => t_ebenezerclone('Checked: copies solutions from the source ticket. Unchecked: does not copy solutions.'),
-                ],
-                'validations' => [
-                    'label'   => t_ebenezerclone('Approvals'),
-                    'kind'    => 'component',
-                    'section' => 'approvals',
-                    'tooltip' => t_ebenezerclone('Checked: copies approval requests and answers from the source ticket. Unchecked: does not copy approvals.'),
-                ],
-                'satisfaction' => [
-                    'label'   => t_ebenezerclone('Satisfaction survey'),
-                    'kind'    => 'component',
-                    'section' => 'timeline',
-                    'tooltip' => t_ebenezerclone('Checked: copies satisfaction survey data from the source ticket. Unchecked: does not copy satisfaction data.'),
+                'followups'       => [
+                    'label' => t_ebenezerclone('Create informational activities during cloning'),
+                    'kind'  => 'component',
+                    'tooltip' => t_ebenezerclone('Checked: creates informational activities during cloning. Unchecked: does not create informational activities.'),
                 ],
             ]
         );
-    }
-
-    public static function getCloneCopySections(): array
-    {
-        return [
-            'ticket' => ['label' => t_ebenezerclone('Ticket')],
-            'actors' => ['label' => t_ebenezerclone('Actors')],
-            'stats' => ['label' => t_ebenezerclone('Statistics and automatic dates')],
-            'approvals' => ['label' => t_ebenezerclone('Approvals')],
-            'relationships' => ['label' => t_ebenezerclone('Changes, problems, projects and relationships')],
-            'timeline' => ['label' => t_ebenezerclone('Functional timeline')],
-            'documents' => ['label' => t_ebenezerclone('Documents and attachments')],
-        ];
     }
 
     public static function getCloneCopyPolicyOptions(): array
@@ -456,80 +260,23 @@ class PluginEbenezercloneConfig extends CommonDBTM
 
     private static function getCloneCopyTicketFields(): array
     {
-        /** @var \DBmysql $DB */
-        global $DB;
-
-        $ticket = new Ticket();
-        $table = (string) $ticket->getTable();
         $search_labels_map = self::getCloneCopySearchOptionLabelsMap();
+        $allowed_fields = [
+            'requesttypes_id',
+            'urgency',
+            'impact',
+            'priority',
+            'locations_id',
+            'users_id_recipient',
+        ];
         $fields = [];
-
-        foreach ($DB->request("SHOW COLUMNS FROM `$table`") as $row) {
-            $field = (string) ($row['Field'] ?? '');
-            if ($field === '' || in_array($field, self::getCloneCopyTicketFieldExclusions(), true)) {
-                continue;
-            }
-
+        foreach ($allowed_fields as $field) {
             $fields[$field] = $search_labels_map[$field] ?? self::formatFieldKeyForDisplay($field);
         }
 
-        ksort($fields);
         return $fields;
     }
 
-    private static function getCloneCopyFieldSection(string $field_key): string
-    {
-        $approval_fields = [
-            'global_validation',
-            'validation_percent',
-        ];
-        $stats_fields = [
-            'actiontime',
-            'assign_delay_stat',
-            'begin_waiting_date',
-            'close_delay_stat',
-            'closedate',
-            'date',
-            'internal_time_to_own',
-            'internal_time_to_resolve',
-            'ola_tto_begin_date',
-            'ola_ttr_begin_date',
-            'ola_waiting_duration',
-            'olalevels_id_ttr',
-            'olas_id_tto',
-            'olas_id_ttr',
-            'sla_waiting_duration',
-            'slalevels_id_ttr',
-            'slas_id_tto',
-            'slas_id_ttr',
-            'solve_delay_stat',
-            'solvedate',
-            'takeintoaccountdate',
-            'time_to_own',
-            'time_to_resolve',
-            'waiting_duration',
-        ];
-
-        if (in_array($field_key, $approval_fields, true)) {
-            return 'approvals';
-        }
-
-        if (in_array($field_key, $stats_fields, true)) {
-            return 'stats';
-        }
-
-        return 'ticket';
-    }
-
-    private static function getCloneCopyTicketFieldExclusions(): array
-    {
-        return [
-            'id',
-            'date_mod',
-            'date_creation',
-            'users_id_lastupdater',
-        ];
-    }
     private static function getCloneCopySearchOptionLabelsMap(): array
     {
         $labels = [];
@@ -610,93 +357,16 @@ class PluginEbenezercloneConfig extends CommonDBTM
         ];
     }
 
-    public static function isGlobalTicketPropertiesBlockingEnabled(): bool
-    {
-        $config = array_merge(self::getDefaults(), Config::getConfigurationValues('ebenezerclone'));
-        return !empty($config[self::CONFIG_KEY_GLOBAL_BLOCK_ALL_PROPERTIES]);
-    }
-
-    public static function isEmptyCategoryEditionAllowed(): bool
-    {
-        $config = array_merge(self::getDefaults(), Config::getConfigurationValues('ebenezerclone'));
-        return !empty($config[self::CONFIG_KEY_ALLOW_EMPTY_CATEGORY_EDITION]);
-    }
-
     public static function shouldForceAssignedStatusOnClone(): bool
     {
         $config = array_merge(self::getDefaults(), Config::getConfigurationValues('ebenezerclone'));
         return !empty($config[self::CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE]);
     }
 
-    public static function getTicketPropertyProfilePolicies(): array
+    public static function shouldRecalculateTitleFromCategory(): bool
     {
-        $scope_data = self::getPermissionScopeData();
-        return $scope_data['ticket_property_policies'];
-    }
-
-    public static function getResolvedTicketPropertyPolicy(
-        string $property_key,
-        ?int $profile_id = null,
-        ?int $entity_id = null
-    ): ?string {
-        if (!array_key_exists($property_key, self::getTicketPropertyDefinitions())) {
-            return null;
-        }
-
-        if ($profile_id === null) {
-            $profile_id = (int) ($_SESSION['glpiactiveprofile']['id'] ?? 0);
-        }
-        $global_default_policy = self::isGlobalTicketPropertiesBlockingEnabled()
-            ? self::PROPERTY_POLICY_BLOCK
-            : self::PROPERTY_POLICY_ALLOW;
-        if ($profile_id <= 0) {
-            return $global_default_policy;
-        }
-
-        if ($entity_id === null) {
-            $entity_id = (int) ($_SESSION['glpiactive_entity'] ?? 0);
-        }
-        if ($entity_id < 0) {
-            $entity_id = 0;
-        }
-
-        $decision = $global_default_policy;
-        $authorizations = self::getProfileAuthorizations();
-        $policies = self::getTicketPropertyProfilePolicies();
-
-        $matched_authorizations = [];
-        foreach ($authorizations as $authorization_id => $authorization) {
-            if ((int) ($authorization['profiles_id'] ?? 0) !== $profile_id) {
-                continue;
-            }
-            $specificity = self::getAuthorizationSpecificity($authorization, $entity_id);
-            if ($specificity === null) {
-                continue;
-            }
-            $matched_authorizations[] = [
-                'authorization_id' => (string) $authorization_id,
-                'specificity'      => $specificity,
-            ];
-        }
-
-        usort($matched_authorizations, static function (array $a, array $b): int {
-            return $a['specificity'] <=> $b['specificity'];
-        });
-
-        foreach ($matched_authorizations as $matched_authorization) {
-            $authorization_id = (string) ($matched_authorization['authorization_id'] ?? '');
-            if ($authorization_id === '') {
-                continue;
-            }
-            if (!isset($policies[$authorization_id]) || !array_key_exists($property_key, $policies[$authorization_id])) {
-                continue;
-            }
-            $decision = !empty($policies[$authorization_id][$property_key])
-                ? self::PROPERTY_POLICY_BLOCK
-                : self::PROPERTY_POLICY_ALLOW;
-        }
-
-        return $decision;
+        $config = array_merge(self::getDefaults(), Config::getConfigurationValues('ebenezerclone'));
+        return !empty($config[self::CONFIG_KEY_RECALCULATE_TITLE_FROM_CATEGORY]);
     }
 
     public static function hasProfilePermission(string $permission_key, ?int $profile_id = null, ?int $entity_id = null): ?bool
@@ -717,31 +387,6 @@ class PluginEbenezercloneConfig extends CommonDBTM
         }
         if ($entity_id < 0) {
             $entity_id = 0;
-        }
-
-        $permission_mode = self::getPermissionMode($permission_key);
-        $group_map = self::getPermissionGroupMap();
-        $permission_group_key = $group_map[$permission_key] ?? null;
-
-        // Global layer toggle has precedence over every profile-level rule.
-        $group_toggles = self::getPermissionGroupToggles();
-        if ($permission_group_key !== null && empty($group_toggles[$permission_group_key])) {
-            // Layer disabled: plugin does not enforce profile matrix for this permission.
-            return null;
-        }
-
-        $decision = null;
-
-        if ($permission_mode !== self::PERMISSION_MODE_PROFILE_ONLY) {
-            $global_policies = self::getGlobalPermissionPolicies();
-            if (array_key_exists($permission_key, $global_policies)) {
-                if ($permission_mode === self::PERMISSION_MODE_GLOBAL_BLOCK_PROFILE_ALLOW) {
-                    // In this mode, checked global checkbox means BLOCK.
-                    $decision = !empty($global_policies[$permission_key]) ? false : true;
-                } else {
-                    $decision = !empty($global_policies[$permission_key]);
-                }
-            }
         }
 
         $authorizations = self::getProfileAuthorizations();
@@ -768,20 +413,19 @@ class PluginEbenezercloneConfig extends CommonDBTM
 
         foreach ($matched_authorizations as $matched_authorization) {
             $authorization_id = (string) ($matched_authorization['authorization_id'] ?? '');
-            if ($authorization_id === '' || !array_key_exists($permission_key, $matrix[$authorization_id] ?? [])) {
+            if ($authorization_id === '') {
                 continue;
             }
-            $profile_value = !empty($matrix[$authorization_id][$permission_key]);
-            if ($permission_mode === self::PERMISSION_MODE_GLOBAL_BLOCK_PROFILE_ALLOW) {
-                // Profile matrix works as ALLOW-list only for this permission.
-                if ($profile_value) {
-                    $decision = true;
-                }
+            if (!isset($matrix[$authorization_id])) {
                 continue;
             }
-            $decision = $profile_value;
+
+            if (!empty($matrix[$authorization_id][$permission_key])) {
+                return true;
+            }
         }
-        return is_bool($decision) ? $decision : null;
+
+        return false;
     }
 
     private static function decodePermissionMatrix(string $raw): array
@@ -790,19 +434,68 @@ class PluginEbenezercloneConfig extends CommonDBTM
         return is_array($decoded) ? $decoded : [];
     }
 
+    private static function decodeProfilePermissionScopePayload($scope_payload): ?array
+    {
+        if (is_array($scope_payload)) {
+            return $scope_payload;
+        }
+
+        if (!is_scalar($scope_payload)) {
+            return null;
+        }
+
+        $raw_scope_matrix = trim((string) $scope_payload);
+        if ($raw_scope_matrix === '') {
+            return null;
+        }
+
+        $candidates = [$raw_scope_matrix];
+        $html_decoded = html_entity_decode($raw_scope_matrix, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        if ($html_decoded !== $raw_scope_matrix) {
+            $candidates[] = $html_decoded;
+        }
+
+        $url_decoded = urldecode($raw_scope_matrix);
+        if ($url_decoded !== $raw_scope_matrix) {
+            $candidates[] = $url_decoded;
+        }
+
+        $rawurl_decoded = rawurldecode($raw_scope_matrix);
+        if ($rawurl_decoded !== $raw_scope_matrix && $rawurl_decoded !== $url_decoded) {
+            $candidates[] = $rawurl_decoded;
+        }
+
+        foreach ($candidates as $candidate) {
+            $decoded = json_decode($candidate, true);
+            if (is_array($decoded)) {
+                return $decoded;
+            }
+
+            $decoded_json_string = json_decode($candidate, false);
+            if (is_string($decoded_json_string)) {
+                $decoded = json_decode($decoded_json_string, true);
+                if (is_array($decoded)) {
+                    return $decoded;
+                }
+            }
+
+            $base64_candidate = str_replace(' ', '+', $candidate);
+            $base64_decoded = base64_decode($base64_candidate, true);
+            if (is_string($base64_decoded) && $base64_decoded !== '') {
+                $decoded = json_decode($base64_decoded, true);
+                if (is_array($decoded)) {
+                    return $decoded;
+                }
+            }
+        }
+
+        return null;
+    }
+
     private static function getPermissionScopeData(): array
     {
         $config = array_merge(self::getDefaults(), Config::getConfigurationValues('ebenezerclone'));
         $scope_raw = self::decodePermissionMatrix((string) ($config[self::CONFIG_KEY_PROFILE_PERMISSION_MATRIX] ?? '{}'));
-        $scope_raw['global_policies'] = self::decodePermissionMatrix(
-            (string) ($config[self::CONFIG_KEY_GLOBAL_PERMISSION_POLICIES] ?? '{}')
-        );
-        $scope_raw['group_toggles'] = self::decodePermissionMatrix(
-            (string) ($config[self::CONFIG_KEY_PERMISSION_GROUP_TOGGLES] ?? '{}')
-        );
-        $scope_raw['ticket_property_policies'] = self::decodePermissionMatrix(
-            (string) ($config[self::CONFIG_KEY_TICKET_PROPERTY_PROFILE_POLICIES] ?? '{}')
-        );
         $scope_raw['global_copy_policies'] = self::decodePermissionMatrix(
             (string) ($config[self::CONFIG_KEY_GLOBAL_CLONE_COPY_POLICIES] ?? '{}')
         );
@@ -816,16 +509,13 @@ class PluginEbenezercloneConfig extends CommonDBTM
             return [
                 'authorizations'   => self::normalizeAuthorizations($raw['authorizations'] ?? []),
                 'permissions'      => self::normalizePermissionMatrix($raw['permissions'] ?? []),
-                'global_policies'  => self::normalizeGlobalPermissionPolicies($raw['global_policies'] ?? []),
-                'group_toggles'    => self::normalizePermissionGroupToggles($raw['group_toggles'] ?? []),
-                'ticket_property_policies' => self::normalizeTicketPropertyProfilePolicies($raw['ticket_property_policies'] ?? []),
                 'global_copy_policies' => self::normalizeGlobalCloneCopyPolicies($raw['global_copy_policies'] ?? []),
             ];
         }
 
         // Backward compatibility: old format was [profiles_id => [permission => 0/1]]
         $legacy_raw = $raw;
-        unset($legacy_raw['global_policies'], $legacy_raw['group_toggles'], $legacy_raw['ticket_property_policies'], $legacy_raw['global_copy_policies']);
+        unset($legacy_raw['global_copy_policies']);
         $legacy_permissions = self::normalizePermissionMatrix($legacy_raw);
         $legacy_authorizations = [];
         $migrated_permissions = [];
@@ -842,9 +532,6 @@ class PluginEbenezercloneConfig extends CommonDBTM
         return [
             'authorizations'   => $legacy_authorizations,
             'permissions'      => $migrated_permissions,
-            'global_policies'  => self::normalizeGlobalPermissionPolicies([]),
-            'group_toggles'    => self::normalizePermissionGroupToggles([]),
-            'ticket_property_policies' => self::normalizeTicketPropertyProfilePolicies([]),
             'global_copy_policies' => self::normalizeGlobalCloneCopyPolicies([]),
         ];
     }
@@ -889,29 +576,23 @@ class PluginEbenezercloneConfig extends CommonDBTM
             $normalized[$authorization_key] = [];
             foreach ($supported as $permission_key) {
                 $raw_permission = $permissions[$permission_key] ?? null;
-                $has_explicit_value = self::isLegacyPermissionValueDefined($permissions, $permission_key);
-                if (!$has_explicit_value && $permission_key === self::PERMISSION_EDIT_ASSIGNED) {
-                    // Backward compatibility: merge legacy assigned-group/assigned-technician flags
-                    // into the new single "Edit assignee" permission.
+                if (
+                    $permission_key === self::PERMISSION_CLONE_TICKET
+                    && !array_key_exists(self::PERMISSION_CLONE_TICKET, $permissions)
+                ) {
                     $raw_permission = (
-                        !empty($permissions['edit_assigned_group'])
-                        || !empty($permissions['edit_assigned_technician'])
+                        !empty($permissions['ticket_clone_action'])
+                        || !empty($permissions['massive_clone'])
                     ) ? 1 : 0;
-                    $has_explicit_value = (
-                        self::isLegacyPermissionValueDefined($permissions, 'edit_assigned_group')
-                        || self::isLegacyPermissionValueDefined($permissions, 'edit_assigned_technician')
-                    );
                 }
                 if (is_array($raw_permission)) {
-                    // Backward compatibility: old payload had "enabled + allow".
-                    // New payload is a single boolean checkbox: checked=allow, unchecked=block.
                     if (array_key_exists('allow', $raw_permission)) {
                         $value = !empty($raw_permission['allow']) ? 1 : 0;
                     } else {
                         $value = !empty($raw_permission) ? 1 : 0;
                     }
                 } else {
-                    $value = $has_explicit_value
+                    $value = array_key_exists($permission_key, $permissions)
                         ? (!empty($raw_permission) ? 1 : 0)
                         : 0;
                 }
@@ -921,98 +602,6 @@ class PluginEbenezercloneConfig extends CommonDBTM
         }
 
         return $normalized;
-    }
-
-    private static function normalizeGlobalPermissionPolicies(array $policies): array
-    {
-        $supported = self::getSupportedPermissionKeys();
-        $normalized = [];
-        foreach ($supported as $permission_key) {
-            $raw_policy = $policies[$permission_key] ?? null;
-            if (!self::canPermissionBeConfiguredGlobally($permission_key)) {
-                $normalized[$permission_key] = 0;
-                continue;
-            }
-            if (is_array($raw_policy)) {
-                if (array_key_exists('allow', $raw_policy)) {
-                    $value = !empty($raw_policy['allow']) ? 1 : 0;
-                } else {
-                    $value = !empty($raw_policy) ? 1 : 0;
-                }
-            } else {
-                $value = self::isLegacyPermissionValueDefined($policies, $permission_key)
-                    ? (!empty($raw_policy) ? 1 : 0)
-                    : self::getPermissionGlobalDefault($permission_key);
-            }
-
-            $normalized[$permission_key] = $value;
-        }
-
-        return $normalized;
-    }
-
-    private static function normalizePermissionGroupToggles(array $group_toggles): array
-    {
-        $normalized = [];
-        foreach (self::getPermissionGroups() as $group_key => $group_definition) {
-            $normalized[(string) $group_key] = array_key_exists($group_key, $group_toggles)
-                ? (!empty($group_toggles[$group_key]) ? 1 : 0)
-                : 1;
-        }
-
-        return $normalized;
-    }
-
-    private static function normalizeTicketPropertyProfilePolicies(array $policies): array
-    {
-        $definitions = self::getTicketPropertyDefinitions();
-        $normalized = [];
-
-        foreach ($policies as $authorization_id => $property_policies) {
-            $authorization_key = trim((string) $authorization_id);
-            if ($authorization_key === '' || !is_array($property_policies)) {
-                continue;
-            }
-
-            $normalized[$authorization_key] = [];
-            foreach ($definitions as $property_key => $definition) {
-                $normalized[$authorization_key][$property_key] = self::normalizeTicketPropertyPolicyValue(
-                    $property_policies[$property_key] ?? 0
-                );
-            }
-        }
-
-        return $normalized;
-    }
-
-    private static function normalizeTicketPropertyPolicyValue($value): int
-    {
-        if (is_string($value)) {
-            $normalized = strtolower(trim($value));
-            if (
-                $normalized === self::PROPERTY_POLICY_BLOCK
-                || $normalized === '1'
-                || $normalized === 'true'
-                || $normalized === 'on'
-                || $normalized === 'yes'
-            ) {
-                return 1;
-            }
-
-            if (
-                $normalized === self::PROPERTY_POLICY_ALLOW
-                || $normalized === self::PROPERTY_POLICY_IGNORE
-                || $normalized === '0'
-                || $normalized === 'false'
-                || $normalized === 'off'
-                || $normalized === 'no'
-                || $normalized === ''
-            ) {
-                return 0;
-            }
-        }
-
-        return !empty($value) ? 1 : 0;
     }
 
     private static function normalizeGlobalCloneCopyPolicies(array $policies): array
@@ -1031,33 +620,56 @@ class PluginEbenezercloneConfig extends CommonDBTM
         return $normalized;
     }
 
-    private static function isLegacyPermissionValueDefined(array $source, string $key): bool
-    {
-        return array_key_exists($key, $source);
-    }
-
     private static function buildAuthorizationId(int $profiles_id, int $entities_id, int $is_recursive): string
     {
         return sprintf('p%1$d_e%2$d_r%3$d', $profiles_id, $entities_id, $is_recursive ? 1 : 0);
     }
 
-    private static function isAuthorizationMatchingEntity(array $authorization, int $entity_id): bool
+    private static function normalizeAuthorizationRowsFromInput($rows): array
     {
-        $authorization_entity = (int) ($authorization['entities_id'] ?? 0);
-        if ($authorization_entity === 0) {
-            return true;
+        if (!is_array($rows)) {
+            return [
+                'authorizations' => [],
+                'permissions' => [],
+                'invalid_rows' => 0,
+            ];
         }
 
-        if ($authorization_entity === $entity_id) {
-            return true;
+        $authorizations = [];
+        $permissions = [];
+        $invalid_rows = 0;
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                $invalid_rows++;
+                continue;
+            }
+
+            $profiles_id = (int) ($row['profiles_id'] ?? 0);
+            $entities_id = (int) ($row['entities_id'] ?? -1);
+            $is_recursive = !empty($row['is_recursive']) ? 1 : 0;
+
+            if ($profiles_id <= 0 || $entities_id < 0) {
+                $invalid_rows++;
+                continue;
+            }
+
+            $authorization_id = self::buildAuthorizationId($profiles_id, $entities_id, $is_recursive);
+            $authorizations[$authorization_id] = [
+                'profiles_id' => $profiles_id,
+                'entities_id' => $entities_id,
+                'is_recursive' => $is_recursive,
+            ];
+            $permissions[$authorization_id] = [
+                self::PERMISSION_CLONE_TICKET => 1,
+            ];
         }
 
-        if (empty($authorization['is_recursive'])) {
-            return false;
-        }
-
-        $sons = array_map('intval', getSonsOf('glpi_entities', $authorization_entity));
-        return in_array($entity_id, $sons, true);
+        return [
+            'authorizations' => $authorizations,
+            'permissions' => $permissions,
+            'invalid_rows' => $invalid_rows,
+        ];
     }
 
     private static function getAuthorizationSpecificity(array $authorization, int $entity_id): ?int
@@ -1092,7 +704,7 @@ class PluginEbenezercloneConfig extends CommonDBTM
             'timeline_log_clone_source' => t_ebenezerclone('Log clone reference on source ticket'),
             'timeline_log_ticket_link' => t_ebenezerclone('Log ticket link creation'),
             'timeline_log_followups' => t_ebenezerclone('Log informational followups created by plugin'),
-            'timeline_log_items_copied' => t_ebenezerclone('Log copied linked items'),
+            'timeline_log_items_copied' => t_ebenezerclone('Log copied links and related items'),
             'timeline_log_actors_copied' => t_ebenezerclone('Log copied actors'),
             'timeline_log_clone_failure' => t_ebenezerclone('Log clone failure on source ticket'),
         ];
@@ -1105,7 +717,7 @@ class PluginEbenezercloneConfig extends CommonDBTM
             'timeline_log_clone_source' => t_ebenezerclone('Checked: logs clone reference on the source ticket timeline. Unchecked: does not create this timeline log on source ticket.'),
             'timeline_log_ticket_link' => t_ebenezerclone('Checked: logs creation of link between source and cloned tickets. Unchecked: does not create timeline log for ticket link.'),
             'timeline_log_followups' => t_ebenezerclone('Checked: logs informational activities created by plugin during cloning. Unchecked: does not create timeline log for informational activities.'),
-            'timeline_log_items_copied' => t_ebenezerclone('Checked: logs copied linked items and copied document links. Unchecked: does not create timeline log for copied items/documents.'),
+            'timeline_log_items_copied' => t_ebenezerclone('Checked: logs copied related ticket links, related items, and copied document links. Unchecked: does not create timeline log for copied links/items/documents.'),
             'timeline_log_actors_copied' => t_ebenezerclone('Checked: logs copied actors from source ticket. Unchecked: does not create timeline log for copied actors.'),
             'timeline_log_clone_failure' => t_ebenezerclone('Checked: logs clone failure on source ticket timeline. Unchecked: does not create timeline log for clone failures.'),
         ];
@@ -1196,24 +808,6 @@ class PluginEbenezercloneConfig extends CommonDBTM
         return !empty($config[$key]);
     }
 
-    public static function isGlobalCloneActionsBlocked(): bool
-    {
-        $config = array_merge(self::getDefaults(), Config::getConfigurationValues('ebenezerclone'));
-        return !empty($config[self::CONFIG_KEY_GLOBAL_BLOCK_CLONE_ACTIONS]);
-    }
-
-    public static function isCloneOperationsEnabled(): bool
-    {
-        $group_toggles = self::getPermissionGroupToggles();
-        return !empty($group_toggles['clone']);
-    }
-
-    public static function isGlobalActorFieldsBlocked(): bool
-    {
-        $config = array_merge(self::getDefaults(), Config::getConfigurationValues('ebenezerclone'));
-        return !empty($config[self::CONFIG_KEY_GLOBAL_BLOCK_ACTOR_FIELDS]);
-    }
-
     public static function getModeOptions()
     {
         return [
@@ -1231,13 +825,7 @@ class PluginEbenezercloneConfig extends CommonDBTM
         $output = [];
 
         foreach (array_keys($defaults) as $key) {
-            if (
-                $key === self::CONFIG_KEY_PROFILE_PERMISSION_MATRIX
-                || $key === self::CONFIG_KEY_GLOBAL_PERMISSION_POLICIES
-                || $key === self::CONFIG_KEY_PERMISSION_GROUP_TOGGLES
-                || $key === self::CONFIG_KEY_TICKET_PROPERTY_PROFILE_POLICIES
-                || $key === self::CONFIG_KEY_GLOBAL_CLONE_COPY_POLICIES
-            ) {
+            if ($key === self::CONFIG_KEY_GLOBAL_CLONE_COPY_POLICIES) {
                 continue;
             }
 
@@ -1269,27 +857,12 @@ class PluginEbenezercloneConfig extends CommonDBTM
                 continue;
             }
 
-            if ($key === self::CONFIG_KEY_GLOBAL_BLOCK_CLONE_ACTIONS) {
-                $output[$key] = !empty($input[$key]) ? 1 : 0;
-                continue;
-            }
-
-            if ($key === self::CONFIG_KEY_GLOBAL_BLOCK_ACTOR_FIELDS) {
-                $output[$key] = !empty($input[$key]) ? 1 : 0;
-                continue;
-            }
-
-            if ($key === self::CONFIG_KEY_GLOBAL_BLOCK_ALL_PROPERTIES) {
-                $output[$key] = !empty($input[$key]) ? 1 : 0;
-                continue;
-            }
-
-            if ($key === self::CONFIG_KEY_ALLOW_EMPTY_CATEGORY_EDITION) {
-                $output[$key] = !empty($input[$key]) ? 1 : 0;
-                continue;
-            }
-
             if ($key === self::CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE) {
+                $output[$key] = !empty($input[$key]) ? 1 : 0;
+                continue;
+            }
+
+            if ($key === self::CONFIG_KEY_RECALCULATE_TITLE_FROM_CATEGORY) {
                 $output[$key] = !empty($input[$key]) ? 1 : 0;
                 continue;
             }
@@ -1297,94 +870,60 @@ class PluginEbenezercloneConfig extends CommonDBTM
             $output[$key] = $input[$key] ?? $defaults[$key];
         }
 
-        $scope_data = self::getPermissionScopeData();
-        $authorizations = self::normalizeAuthorizations($input['authorized_profiles'] ?? $scope_data['authorizations']);
-        $profile_permissions = self::normalizePermissionMatrix($input['profile_permissions'] ?? $scope_data['permissions']);
-        $ticket_property_policies = self::normalizeTicketPropertyProfilePolicies(
-            $input['ticket_property_profile_policies'] ?? $scope_data['ticket_property_policies']
-        );
         $global_copy_policies = self::normalizeGlobalCloneCopyPolicies(
-            $input['global_clone_copy_policies'] ?? $scope_data['global_copy_policies']
+            $input['global_clone_copy_policies'] ?? self::getGlobalCloneCopyPolicies()
         );
-        $global_policies = self::normalizeGlobalPermissionPolicies($input['global_permissions'] ?? $scope_data['global_policies']);
-        $group_toggles = self::normalizePermissionGroupToggles(
-            $input['permission_group_toggles'] ?? $scope_data['group_toggles']
-        );
-        $profile_action = trim((string) ($input['ebenezerclone_profile_action'] ?? ''));
+        $output[self::CONFIG_KEY_GLOBAL_CLONE_COPY_POLICIES] = json_encode(
+            self::normalizeGlobalCloneCopyPolicies($global_copy_policies),
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        ) ?: '{}';
 
-        if ($profile_action === 'add') {
-            $new_profiles_id = (int) ($input['new_authorization_profiles_id'] ?? 0);
-            $new_entities_id = (int) ($input['new_authorization_entities_id'] ?? -1);
-            $new_is_recursive = !empty($input['new_authorization_is_recursive']) ? 1 : 0;
+        $scope_to_persist = null;
 
-            if ($new_profiles_id > 0 && $new_entities_id >= 0) {
-                $new_authorization_id = self::buildAuthorizationId($new_profiles_id, $new_entities_id, $new_is_recursive);
-                $authorizations[$new_authorization_id] = [
-                    'profiles_id'  => $new_profiles_id,
-                    'entities_id'  => $new_entities_id,
-                    'is_recursive' => $new_is_recursive,
+        if (array_key_exists('ebz_authorizations', $input)) {
+            if (!is_array($input['ebz_authorizations'])) {
+                Toolbox::logDebug('EBENEZERCLONE invalid authorization payload type; persisting empty scope', [
+                    'payload_type' => gettype($input['ebz_authorizations']),
+                ]);
+            }
+            $normalized_rows = self::normalizeAuthorizationRowsFromInput($input['ebz_authorizations']);
+            if (($normalized_rows['invalid_rows'] ?? 0) > 0) {
+                Toolbox::logDebug('EBENEZERCLONE invalid authorization rows ignored during save', [
+                    'invalid_rows' => (int) $normalized_rows['invalid_rows'],
+                    'payload_type' => gettype($input['ebz_authorizations']),
+                ]);
+            }
+            $scope_to_persist = [
+                'authorizations' => $normalized_rows['authorizations'] ?? [],
+                'permissions' => $normalized_rows['permissions'] ?? [],
+            ];
+        } else {
+            // Legacy fallback kept temporarily for backward compatibility.
+            $scope_payload = $input[self::CONFIG_KEY_PROFILE_PERMISSION_MATRIX] ?? '';
+            $decoded_scope = self::decodeProfilePermissionScopePayload($scope_payload);
+            if (is_array($decoded_scope)) {
+                $normalized_scope = self::normalizePermissionScopeData($decoded_scope);
+                $scope_to_persist = [
+                    'authorizations' => $normalized_scope['authorizations'] ?? [],
+                    'permissions' => $normalized_scope['permissions'] ?? [],
                 ];
-                if (!isset($profile_permissions[$new_authorization_id])) {
-                    $profile_permissions[$new_authorization_id] = [];
-                }
             } else {
-                Session::addMessageAfterRedirect(
-                    __('One or more required fields are missing'),
-                    false,
-                    ERROR
-                );
-            }
-        }
-
-        $remove_authorization_id = trim((string) ($input['remove_profile_authorization_target'] ?? ''));
-        if ($profile_action === 'remove' && $remove_authorization_id !== '') {
-            unset($authorizations[$remove_authorization_id], $profile_permissions[$remove_authorization_id]);
-        }
-
-        foreach (array_keys($profile_permissions) as $authorization_id) {
-            if (!isset($authorizations[$authorization_id])) {
-                unset($profile_permissions[$authorization_id]);
-            }
-        }
-        foreach (array_keys($ticket_property_policies) as $authorization_id) {
-            if (!isset($authorizations[$authorization_id])) {
-                unset($ticket_property_policies[$authorization_id]);
-            }
-        }
-        // Keep every authorization with an explicit checkbox state per property.
-        $ticket_property_definitions = self::getTicketPropertyDefinitions();
-        foreach ($authorizations as $authorization_id => $authorization_data) {
-            if (!isset($ticket_property_policies[$authorization_id]) || !is_array($ticket_property_policies[$authorization_id])) {
-                $ticket_property_policies[$authorization_id] = [];
-            }
-            foreach ($ticket_property_definitions as $property_key => $property_definition) {
-                if (!array_key_exists($property_key, $ticket_property_policies[$authorization_id])) {
-                    $ticket_property_policies[$authorization_id][$property_key] = 0;
-                }
+                Toolbox::logDebug('EBENEZERCLONE invalid legacy authorization payload; persisting empty scope', [
+                    'payload_type' => gettype($scope_payload),
+                    'payload_length' => is_scalar($scope_payload) ? strlen((string) $scope_payload) : -1,
+                ]);
+                $scope_to_persist = [
+                    'authorizations' => [],
+                    'permissions' => [],
+                ];
             }
         }
 
         $output[self::CONFIG_KEY_PROFILE_PERMISSION_MATRIX] = json_encode(
             [
-                'authorizations' => $authorizations,
-                'permissions'    => self::normalizePermissionMatrix($profile_permissions),
+                'authorizations' => $scope_to_persist['authorizations'] ?? [],
+                'permissions' => $scope_to_persist['permissions'] ?? [],
             ],
-            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
-        ) ?: '{}';
-        $output[self::CONFIG_KEY_GLOBAL_PERMISSION_POLICIES] = json_encode(
-            self::normalizeGlobalPermissionPolicies($global_policies),
-            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
-        ) ?: '{}';
-        $output[self::CONFIG_KEY_PERMISSION_GROUP_TOGGLES] = json_encode(
-            self::normalizePermissionGroupToggles($group_toggles),
-            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
-        ) ?: '{}';
-        $output[self::CONFIG_KEY_TICKET_PROPERTY_PROFILE_POLICIES] = json_encode(
-            self::normalizeTicketPropertyProfilePolicies($ticket_property_policies),
-            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
-        ) ?: '{}';
-        $output[self::CONFIG_KEY_GLOBAL_CLONE_COPY_POLICIES] = json_encode(
-            self::normalizeGlobalCloneCopyPolicies($global_copy_policies),
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
         ) ?: '{}';
 
@@ -1404,17 +943,42 @@ class PluginEbenezercloneConfig extends CommonDBTM
         $mode_options = self::getModeOptions();
         $definitions = self::getFieldDefinitions();
         uasort($definitions, fn($a, $b) => $a['order'] <=> $b['order']);
-        $permission_definitions = self::getPermissionDefinitions();
-        $permission_groups = self::getPermissionGroups();
-        $permission_matrix = self::getProfilePermissionMatrix();
-        $ticket_property_policies = self::getTicketPropertyProfilePolicies();
-        $ticket_property_definitions = self::getTicketPropertyDefinitions();
         $global_copy_policies = self::getGlobalCloneCopyPolicies();
         $clone_copy_definitions = self::getCloneCopyDefinitions();
         $clone_copy_policy_options = self::getCloneCopyPolicyOptions();
-        $group_toggles = self::getPermissionGroupToggles();
         $available_profiles = self::getAvailableProfiles();
-        $authorizations = self::getProfileAuthorizations();
+        $available_entities = self::getAvailableEntities();
+        $profile_authorizations = self::getProfileAuthorizations();
+        $profile_permission_matrix = self::getProfilePermissionMatrix();
+        $clone_authorization_rows = [];
+        foreach ($profile_authorizations as $authorization_id => $authorization) {
+            $auth_id = (string) $authorization_id;
+            if ($auth_id === '') {
+                continue;
+            }
+            $has_clone_permission = !empty($profile_permission_matrix[$auth_id][self::PERMISSION_CLONE_TICKET]);
+            if (!$has_clone_permission) {
+                continue;
+            }
+            $clone_authorization_rows[] = [
+                'profiles_id'  => (int) ($authorization['profiles_id'] ?? 0),
+                'entities_id'  => (int) ($authorization['entities_id'] ?? 0),
+                'is_recursive' => !empty($authorization['is_recursive']) ? 1 : 0,
+            ];
+        }
+        if (count($clone_authorization_rows) > 1) {
+            $locale = (string) ($_SESSION['glpilanguage'] ?? 'en_US');
+            $collator = class_exists('Collator') ? new Collator($locale) : null;
+            usort($clone_authorization_rows, static function (array $a, array $b) use ($available_profiles, $collator): int {
+                $label_a = (string) ($available_profiles[(int) ($a['profiles_id'] ?? 0)] ?? '');
+                $label_b = (string) ($available_profiles[(int) ($b['profiles_id'] ?? 0)] ?? '');
+                if ($collator instanceof Collator) {
+                    return $collator->compare($label_a, $label_b);
+                }
+
+                return strcasecmp($label_a, $label_b);
+            });
+        }
         $field_labels = [];
         foreach ($definitions as $def) {
             $field_labels[$def['config_key']] = $def['label'];
@@ -1426,9 +990,6 @@ class PluginEbenezercloneConfig extends CommonDBTM
 
         echo Html::hidden('config_context', ['value' => 'ebenezerclone']);
         echo Html::hidden('config_class', ['value' => __CLASS__]);
-        echo Html::hidden('ebenezerclone_profile_action', ['id' => 'ebz_profile_action', 'value' => 'save']);
-        echo Html::hidden('remove_profile_authorization_target', ['id' => 'ebz_remove_auth', 'value' => '']);
-
         echo "<div class='center' id='tabsbody'>";
         echo "<table class='tab_cadre_fixe'>";
         $clone_form_fields_tooltip = Html::showToolTip(
@@ -1463,95 +1024,222 @@ class PluginEbenezercloneConfig extends CommonDBTM
             echo "</td></tr>";
         }
 
+        echo "<tr><th colspan='2'>" . t_ebenezerclone('Clone authorization by profile and entity') . "</th></tr>";
+        echo "<tr class='tab_bg_1'><td colspan='2'>";
+        echo "<div class='mb-2'>";
+        echo t_ebenezerclone('Only configured profile/entity combinations can see and execute ticket cloning. Recursivity applies to child entities.');
+        echo "</div>";
+
+        if ($canedit) {
+            echo "<div class='row g-2 align-items-end mb-3' id='ebz_auth_add_section'>";
+            echo "<div class='col-md-4'>";
+            echo "<label class='form-label'>" . t_ebenezerclone('Entity') . "</label>";
+            echo "<select class='form-select' id='ebz_auth_new_entity'>";
+            foreach ($available_entities as $entity_id => $entity_name) {
+                echo "<option value='" . (int) $entity_id . "'>"
+                    . htmlspecialchars((string) $entity_name, ENT_QUOTES, 'UTF-8')
+                    . "</option>";
+            }
+            echo "</select>";
+            echo "</div>";
+
+            echo "<div class='col-md-4'>";
+            echo "<label class='form-label'>" . t_ebenezerclone('Profile') . "</label>";
+            echo "<select class='form-select' id='ebz_auth_new_profile'>";
+            echo "<option value='0'>-----</option>";
+            foreach ($available_profiles as $profile_id => $profile_name) {
+                echo "<option value='" . (int) $profile_id . "'>"
+                    . htmlspecialchars((string) $profile_name, ENT_QUOTES, 'UTF-8')
+                    . "</option>";
+            }
+            echo "</select>";
+            echo "</div>";
+
+            echo "<div class='col-md-2'>";
+            echo "<label class='form-label'>" . t_ebenezerclone('Recursive') . "</label>";
+            echo "<select class='form-select' id='ebz_auth_new_recursive'>";
+            echo "<option value='0'>" . __('No') . "</option>";
+            echo "<option value='1'>" . __('Yes') . "</option>";
+            echo "</select>";
+            echo "</div>";
+
+            echo "<div class='col-md-2'>";
+            echo "<button type='button' class='btn btn-primary w-100' id='ebz_auth_add_row'>"
+                . t_ebenezerclone('Add authorization')
+                . "</button>";
+            echo "</div>";
+            echo "</div>";
+        }
+
+        echo "<table class='tab_cadre_fixehov' id='ebz_clone_authorizations_table'>";
+        echo "<thead><tr>";
+        echo "<th>" . t_ebenezerclone('Entity') . "</th>";
+        echo "<th>" . t_ebenezerclone('Profile') . "</th>";
+        echo "<th>" . t_ebenezerclone('Recursive') . "</th>";
+        if ($canedit) {
+            echo "<th>" . __('Actions') . "</th>";
+        }
+        echo "</tr></thead><tbody>";
+
+        foreach ($clone_authorization_rows as $row) {
+            $profiles_id = (int) ($row['profiles_id'] ?? 0);
+            $entities_id = (int) ($row['entities_id'] ?? 0);
+            $is_recursive = !empty($row['is_recursive']) ? 1 : 0;
+            $row_key = self::buildAuthorizationId($profiles_id, $entities_id, $is_recursive);
+
+            $profile_label = (string) ($available_profiles[$profiles_id] ?? ('#' . $profiles_id));
+            $entity_label = (string) ($available_entities[$entities_id] ?? ('#' . $entities_id));
+            $recursive_label = $is_recursive === 1 ? __('Yes') : __('No');
+
+            echo "<tr class='ebz-auth-row' data-profile-id='" . $profiles_id
+                . "' data-entity-id='" . $entities_id
+                . "' data-recursive='" . $is_recursive . "'>";
+            echo "<td class='ebz-auth-entity-label'>" . htmlspecialchars($entity_label, ENT_QUOTES, 'UTF-8') . "</td>";
+            echo "<td class='ebz-auth-profile-label'>" . htmlspecialchars($profile_label, ENT_QUOTES, 'UTF-8') . "</td>";
+            echo "<td class='ebz-auth-recursive-label'>" . htmlspecialchars($recursive_label, ENT_QUOTES, 'UTF-8') . "</td>";
+            if ($canedit) {
+                echo "<td><button type='button' class='btn btn-outline-danger btn-sm ebz-auth-remove'>"
+                    . t_ebenezerclone('Remove')
+                    . "</button></td>";
+                echo Html::hidden(sprintf('ebz_authorizations[%s][profiles_id]', $row_key), ['value' => $profiles_id]);
+                echo Html::hidden(sprintf('ebz_authorizations[%s][entities_id]', $row_key), ['value' => $entities_id]);
+                echo Html::hidden(sprintf('ebz_authorizations[%s][is_recursive]', $row_key), ['value' => $is_recursive]);
+            }
+            echo "</tr>";
+        }
+
+        echo "</tbody></table>";
+        echo "</td></tr>";
+
         echo "<tr><th colspan='2'>" . t_ebenezerclone('Global clone copy policy') . "</th></tr>";
         echo "<tr class='tab_bg_1'><td colspan='2'>";
         echo "<div id='ebz_global_copy_policy_section' class='border rounded p-3 mb-2'>";
 
-        $clone_copy_sections = self::getCloneCopySections();
-        $grouped_copy_definitions = [];
-        foreach ($clone_copy_sections as $section_key => $section_definition) {
-            $grouped_copy_definitions[$section_key] = [];
-        }
+        $component_definitions = [];
+        $field_copy_definitions = [];
         foreach ($clone_copy_definitions as $copy_key => $copy_definition) {
-            $section_key = (string) ($copy_definition['section'] ?? 'ticket');
-            if (!isset($grouped_copy_definitions[$section_key])) {
-                $grouped_copy_definitions[$section_key] = [];
+            if (($copy_definition['kind'] ?? '') === 'field') {
+                $field_copy_definitions[$copy_key] = $copy_definition;
+            } else {
+                $component_definitions[$copy_key] = $copy_definition;
             }
-            $grouped_copy_definitions[$section_key][$copy_key] = $copy_definition;
         }
 
-        echo "<div class='mb-3'>";
-        echo "<div class='mb-2'><strong>" . t_ebenezerclone('Global rules') . "</strong></div>";
-        $force_assigned_status_tooltip = Html::showToolTip(
-            t_ebenezerclone('Checked: cloned tickets are always created with status Assigned. Unchecked: status follows the clone copy policy for the Status field.'),
-            ['display' => false]
-        );
-        echo "<div class='mb-2'>";
-        if ($canedit) {
-            Html::showCheckbox([
-                'name'    => self::CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE,
-                'checked' => !empty($values[self::CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE]),
-            ]);
-        } else {
-            echo !empty($values[self::CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE]) ? __('Yes') : __('No');
-        }
-        echo "&nbsp;<span>" . t_ebenezerclone('Force cloned ticket status to Assigned') . "</span>";
-        echo "&nbsp;$force_assigned_status_tooltip";
-        echo "</div>";
-        echo "</div>";
-
-        $clone_fields_tooltip = Html::showToolTip(
-            t_ebenezerclone('When checked, the item is cloned. When unchecked, the item is not cloned.'),
-            ['display' => false]
-        );
-        echo "<div class='mb-2'><strong>" . t_ebenezerclone('Clone catalog') . "</strong>&nbsp;$clone_fields_tooltip</div>";
-        if ($canedit) {
-            echo "<div class='d-flex flex-wrap gap-2 mb-2'>";
-            echo "<button type='button' id='ebz_clone_copy_fields_mark_all' class='btn btn-outline-secondary btn-sm'>" . t_ebenezerclone('Mark all') . "</button>";
-            echo "<button type='button' id='ebz_clone_copy_fields_unmark_all' class='btn btn-outline-secondary btn-sm'>" . t_ebenezerclone('Unmark all') . "</button>";
-            echo "</div>";
-        }
-        foreach ($clone_copy_sections as $section_key => $section_definition) {
-            $section_definitions = $grouped_copy_definitions[$section_key] ?? [];
-            if (!count($section_definitions)) {
-                continue;
-            }
+        if (count($component_definitions) > 0) {
             echo "<div class='mb-3'>";
-            echo "<div class='mb-2'><strong>" . $section_definition['label'] . "</strong></div>";
-            echo "<div class='row g-2'>";
-            foreach ($section_definitions as $copy_key => $copy_definition) {
+            echo "<div class='mb-2'><strong>" . t_ebenezerclone('Global rules') . "</strong></div>";
+            $force_assigned_status_tooltip = Html::showToolTip(
+                t_ebenezerclone('Checked: cloned tickets are always created with status Assigned. Unchecked: status follows the clone copy policy for the Status field.'),
+                ['display' => false]
+            );
+            $recalculate_title_tooltip = Html::showToolTip(
+                t_ebenezerclone('Checked: title is always recalculated from selected category in clone form. Unchecked: title always keeps source ticket title.'),
+                ['display' => false]
+            );
+            echo "<div class='mb-2'>";
+            if ($canedit) {
+                Html::showCheckbox([
+                    'name'    => self::CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE,
+                    'checked' => !empty($values[self::CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE]),
+                ]);
+            } else {
+                echo !empty($values[self::CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE]) ? __('Yes') : __('No');
+            }
+            echo "&nbsp;<span>" . t_ebenezerclone('Force cloned ticket status to Assigned') . "</span>";
+            echo "&nbsp;$force_assigned_status_tooltip";
+            echo "</div>";
+            echo "<div class='mb-2'>";
+            if ($canedit) {
+                Html::showCheckbox([
+                    'name'    => self::CONFIG_KEY_RECALCULATE_TITLE_FROM_CATEGORY,
+                    'checked' => !empty($values[self::CONFIG_KEY_RECALCULATE_TITLE_FROM_CATEGORY]),
+                ]);
+            } else {
+                echo !empty($values[self::CONFIG_KEY_RECALCULATE_TITLE_FROM_CATEGORY]) ? __('Yes') : __('No');
+            }
+            echo "&nbsp;<span>" . t_ebenezerclone('Recalculate title from selected category') . "</span>";
+            echo "&nbsp;$recalculate_title_tooltip";
+            echo "</div>";
+            foreach ($component_definitions as $copy_key => $copy_definition) {
                 $copy_label = (string) ($copy_definition['label'] ?? $copy_key);
-                $tooltip = (string) ($copy_definition['tooltip'] ?? '');
+                $tooltip = (string) ($copy_definition['tooltip'] ?? t_ebenezerclone('Checked: applies this rule. Unchecked: ignores this rule.'));
+                $is_inverted = !empty($copy_definition['inverted']);
                 $current_policy = (string) ($global_copy_policies[$copy_key] ?? self::COPY_POLICY_COPY);
                 if (!array_key_exists($current_policy, $clone_copy_policy_options)) {
                     $current_policy = self::COPY_POLICY_COPY;
                 }
-                $checked = ($current_policy === self::COPY_POLICY_COPY);
-                echo "<div class='col-xl-4 col-lg-4 col-md-6 col-12 border rounded p-2'>";
+                $checked = $is_inverted
+                    ? ($current_policy === self::COPY_POLICY_IGNORE)
+                    : ($current_policy === self::COPY_POLICY_COPY);
+
+                echo "<div class='mb-2'>";
                 if ($canedit) {
                     echo Html::hidden(
                         sprintf('global_clone_copy_policies[%s]', $copy_key),
-                        ['value' => self::COPY_POLICY_IGNORE]
+                        ['value' => $is_inverted ? self::COPY_POLICY_COPY : self::COPY_POLICY_IGNORE]
                     );
                     Html::showCheckbox([
                         'name'          => sprintf('global_clone_copy_policies[%s]', $copy_key),
-                        'value'         => self::COPY_POLICY_COPY,
+                        'value'         => $is_inverted ? self::COPY_POLICY_IGNORE : self::COPY_POLICY_COPY,
                         'checked'       => $checked,
-                        'class'         => 'ebz-clone-copy-field-toggle',
                         'zero_on_empty' => false,
                     ]);
                 } else {
                     echo $checked ? __('Yes') : __('No');
                 }
                 echo "&nbsp;<span>" . htmlspecialchars(Toolbox::stripTags($copy_label), ENT_QUOTES, 'UTF-8') . "</span>";
-                if ($tooltip !== '') {
-                    echo "&nbsp;" . Html::showToolTip($tooltip, ['display' => false]);
-                }
+                echo "&nbsp;" . Html::showToolTip($tooltip, ['display' => false]);
                 echo "</div>";
             }
             echo "</div>";
+        }
+
+        $clone_fields_tooltip = Html::showToolTip(
+            t_ebenezerclone('When checked, the field is cloned. When unchecked, the field is not cloned.'),
+            ['display' => false]
+        );
+        echo "<div class='mb-2'><strong>" . t_ebenezerclone('Ticket fields for cloning') . "</strong>&nbsp;$clone_fields_tooltip</div>";
+        echo "<div class='alert alert-info mb-3'>"
+            . t_ebenezerclone('Title, Type, Category and Content are always copied from the cloning form and are not part of the configurable list.')
+            . "</div>";
+        if ($canedit) {
+            echo "<div class='d-flex flex-wrap gap-2 mb-2'>";
+            echo "<button type='button' id='ebz_clone_copy_fields_mark_all' class='btn btn-outline-secondary btn-sm'>" . t_ebenezerclone('Check all') . "</button>";
+            echo "<button type='button' id='ebz_clone_copy_fields_unmark_all' class='btn btn-outline-secondary btn-sm'>" . t_ebenezerclone('Uncheck all') . "</button>";
             echo "</div>";
         }
+        echo "<div class='row g-2'>";
+        foreach ($field_copy_definitions as $copy_key => $copy_definition) {
+            $copy_label = (string) ($copy_definition['label'] ?? $copy_key);
+            $tooltip = (string) ($copy_definition['tooltip'] ?? '');
+            $current_policy = (string) ($global_copy_policies[$copy_key] ?? self::COPY_POLICY_COPY);
+            if (!array_key_exists($current_policy, $clone_copy_policy_options)) {
+                $current_policy = self::COPY_POLICY_COPY;
+            }
+            $checked = ($current_policy === self::COPY_POLICY_COPY);
+            echo "<div class='col-xl-4 col-lg-4 col-md-6 col-12 border rounded p-2'>";
+            if ($canedit) {
+                echo Html::hidden(
+                    sprintf('global_clone_copy_policies[%s]', $copy_key),
+                    ['value' => self::COPY_POLICY_IGNORE]
+                );
+                Html::showCheckbox([
+                    'name'          => sprintf('global_clone_copy_policies[%s]', $copy_key),
+                    'value'         => self::COPY_POLICY_COPY,
+                    'checked'       => $checked,
+                    'class'         => 'ebz-clone-copy-field-toggle',
+                    'zero_on_empty' => false,
+                ]);
+            } else {
+                echo $checked ? __('Yes') : __('No');
+            }
+            echo "&nbsp;<span>" . htmlspecialchars(Toolbox::stripTags($copy_label), ENT_QUOTES, 'UTF-8') . "</span>";
+            if ($tooltip !== '') {
+                echo "&nbsp;" . Html::showToolTip($tooltip, ['display' => false]);
+            }
+            echo "</div>";
+        }
+        echo "</div>";
 
         if ($canedit) {
             $js = <<<JAVASCRIPT
@@ -1578,6 +1266,161 @@ class PluginEbenezercloneConfig extends CommonDBTM
 })();
 JAVASCRIPT;
             echo Html::scriptBlock($js);
+
+            $profiles_json = json_encode(
+                array_map(
+                    static fn($id, $label) => ['id' => (int) $id, 'label' => (string) $label],
+                    array_keys($available_profiles),
+                    array_values($available_profiles)
+                ),
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+            );
+            $entities_json = json_encode(
+                array_map(
+                    static fn($id, $label) => ['id' => (int) $id, 'label' => (string) $label],
+                    array_keys($available_entities),
+                    array_values($available_entities)
+                ),
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+            );
+            if (!is_string($profiles_json)) {
+                $profiles_json = '[]';
+            }
+            if (!is_string($entities_json)) {
+                $entities_json = '[]';
+            }
+            $remove_label_js = json_encode((string) t_ebenezerclone('Remove'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if (!is_string($remove_label_js)) {
+                $remove_label_js = '"Remove"';
+            }
+            $yes_label_js = json_encode((string) __('Yes'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if (!is_string($yes_label_js)) {
+                $yes_label_js = '"Yes"';
+            }
+            $no_label_js = json_encode((string) __('No'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if (!is_string($no_label_js)) {
+                $no_label_js = '"No"';
+            }
+            $select_profile_warning_js = json_encode(
+                (string) t_ebenezerclone('Select a profile before adding a new authorization row.'),
+                JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+            );
+            if (!is_string($select_profile_warning_js)) {
+                $select_profile_warning_js = '"Select a profile before adding a new authorization row."';
+            }
+            $auth_js = <<<JAVASCRIPT
+(function() {
+    var table = document.getElementById('ebz_clone_authorizations_table');
+    var addBtn = document.getElementById('ebz_auth_add_row');
+    var newProfile = document.getElementById('ebz_auth_new_profile');
+    var newEntity = document.getElementById('ebz_auth_new_entity');
+    var newRecursive = document.getElementById('ebz_auth_new_recursive');
+    if (!table || !addBtn || !newProfile || !newEntity || !newRecursive) {
+        return;
+    }
+
+    var profiles = $profiles_json || [];
+    var entities = $entities_json || [];
+    var removeLabel = $remove_label_js || 'Remove';
+    var yesLabel = $yes_label_js || 'Yes';
+    var noLabel = $no_label_js || 'No';
+    var selectProfileWarning = $select_profile_warning_js || 'Select a profile before adding a new authorization row.';
+
+    var findLabel = function(items, id, fallback) {
+        for (var i = 0; i < items.length; i++) {
+            if (String(items[i].id) === String(id)) {
+                return String(items[i].label);
+            }
+        }
+        return fallback;
+    };
+
+    var addRow = function(profileId, entityId, recursive) {
+        var tbody = table.querySelector('tbody');
+        var tr = document.createElement('tr');
+        tr.className = 'ebz-auth-row';
+        var recursiveInt = recursive ? 1 : 0;
+        tr.setAttribute('data-profile-id', String(profileId));
+        tr.setAttribute('data-entity-id', String(entityId));
+        tr.setAttribute('data-recursive', String(recursiveInt));
+
+        var tdEntity = document.createElement('td');
+        tdEntity.className = 'ebz-auth-entity-label';
+        tdEntity.textContent = findLabel(entities, entityId, '#' + entityId);
+        tr.appendChild(tdEntity);
+
+        var tdProfile = document.createElement('td');
+        tdProfile.className = 'ebz-auth-profile-label';
+        tdProfile.textContent = findLabel(profiles, profileId, '#' + profileId);
+        tr.appendChild(tdProfile);
+
+        var tdRecursive = document.createElement('td');
+        tdRecursive.className = 'ebz-auth-recursive-label';
+        tdRecursive.textContent = recursiveInt === 1 ? yesLabel : noLabel;
+        tr.appendChild(tdRecursive);
+
+        var tdRemove = document.createElement('td');
+        var btnRemove = document.createElement('button');
+        btnRemove.type = 'button';
+        btnRemove.className = 'btn btn-outline-danger btn-sm ebz-auth-remove';
+        btnRemove.textContent = removeLabel;
+        tdRemove.appendChild(btnRemove);
+        tr.appendChild(tdRemove);
+
+        var rowKey = 'p' + profileId + '_e' + entityId + '_r' + (recursiveInt ? '1' : '0');
+        var makeHidden = function(name, value) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = String(value);
+            return input;
+        };
+        tr.appendChild(makeHidden('ebz_authorizations[' + rowKey + '][profiles_id]', profileId));
+        tr.appendChild(makeHidden('ebz_authorizations[' + rowKey + '][entities_id]', entityId));
+        tr.appendChild(makeHidden('ebz_authorizations[' + rowKey + '][is_recursive]', recursiveInt));
+
+        tbody.appendChild(tr);
+    };
+
+    table.addEventListener('click', function(event) {
+        var target = event.target;
+        if (!(target instanceof HTMLElement)) {
+            return;
+        }
+        if (target.classList.contains('ebz-auth-remove')) {
+            var row = target.closest('.ebz-auth-row');
+            if (row) {
+                row.remove();
+            }
+        }
+    });
+
+    addBtn.addEventListener('click', function() {
+        var profileId = parseInt(newProfile.value || '0', 10);
+        if (!(profileId > 0)) {
+            alert(selectProfileWarning);
+            return;
+        }
+
+        var entityId = parseInt(newEntity.value || '0', 10);
+        var recursive = parseInt(newRecursive.value || '0', 10) > 0;
+        addRow(profileId, entityId, recursive);
+        newProfile.value = '0';
+        newRecursive.value = '0';
+    });
+
+    var form = table.closest('form');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            if (parseInt(newProfile.value || '0', 10) > 0) {
+                alert(selectProfileWarning);
+                event.preventDefault();
+            }
+        });
+    }
+})();
+JAVASCRIPT;
+            echo Html::scriptBlock($auth_js);
         }
 
         echo "</div>";
@@ -1600,304 +1443,11 @@ JAVASCRIPT;
             echo "</td></tr>";
         }
 
-        echo "<tr><th colspan='2'>" . t_ebenezerclone('Global permissions') . "</th></tr>";
-        echo "<tr class='tab_bg_1'><td colspan='2'>";
-        echo "<div class='border rounded p-3 mb-2'>";
-        $global_block_clone_tooltip = Html::showToolTip(
-            t_ebenezerclone('Checked: blocks Clone action in ticket actions and Clone action in massive actions for all profiles. If profile matrix is checked for this rule, it can override and allow. Unchecked: plugin ignores profile matrix for this rule and keeps core/other plugins rules.'),
-            ['display' => false]
-        );
-        echo "<div class='mb-2'>";
-        if ($canedit) {
-            Html::showCheckbox([
-                'name'    => self::CONFIG_KEY_GLOBAL_BLOCK_CLONE_ACTIONS,
-                'checked' => !empty($values[self::CONFIG_KEY_GLOBAL_BLOCK_CLONE_ACTIONS]),
-            ]);
-        } else {
-            echo !empty($values[self::CONFIG_KEY_GLOBAL_BLOCK_CLONE_ACTIONS]) ? __('Yes') : __('No');
-        }
-        echo "&nbsp;<span>" . t_ebenezerclone('Global block for clone actions') . "</span>&nbsp;$global_block_clone_tooltip";
-        echo "</div>";
-        $global_block_actors_tooltip = Html::showToolTip(
-            t_ebenezerclone('Checked: plugin blocks requester, observer and assignee actor fields for all profiles by default. Profile matrix can explicitly allow each actor field. Unchecked: plugin ignores actor-field matrix and keeps core/other plugins rules.'),
-            ['display' => false]
-        );
-        echo "<div class='mb-2'>";
-        if ($canedit) {
-            Html::showCheckbox([
-                'name'    => self::CONFIG_KEY_GLOBAL_BLOCK_ACTOR_FIELDS,
-                'checked' => !empty($values[self::CONFIG_KEY_GLOBAL_BLOCK_ACTOR_FIELDS]),
-            ]);
-        } else {
-            echo !empty($values[self::CONFIG_KEY_GLOBAL_BLOCK_ACTOR_FIELDS]) ? __('Yes') : __('No');
-        }
-        echo "&nbsp;<span>" . t_ebenezerclone('Global block for actor fields') . "</span>&nbsp;$global_block_actors_tooltip";
-        echo "</div>";
-        $global_block_properties_tooltip = Html::showToolTip(
-            t_ebenezerclone('Checked: all ticket properties are blocked for editing by default. Profile policy can explicitly allow each field for the logged profile. Unchecked: plugin does not block ticket properties by default. This control affects only form editability and does not change business rules.'),
-            ['display' => false]
-        );
-        echo "<div class='mb-2'>";
-        if ($canedit) {
-            Html::showCheckbox([
-                'name'    => self::CONFIG_KEY_GLOBAL_BLOCK_ALL_PROPERTIES,
-                'checked' => !empty($values[self::CONFIG_KEY_GLOBAL_BLOCK_ALL_PROPERTIES]),
-            ]);
-        } else {
-            echo !empty($values[self::CONFIG_KEY_GLOBAL_BLOCK_ALL_PROPERTIES]) ? __('Yes') : __('No');
-        }
-        echo "&nbsp;<span>" . t_ebenezerclone('Global block for ticket properties') . "</span>&nbsp;$global_block_properties_tooltip";
-        echo "</div>";
-        $allow_empty_category_edition_tooltip = Html::showToolTip(
-            t_ebenezerclone('Checked: when ticket category is empty, plugin does not lock category field and allows editing. Unchecked: category follows the normal profile/global edit policy and core rules.'),
-            ['display' => false]
-        );
-        echo "<div class='mb-2'>";
-        if ($canedit) {
-            Html::showCheckbox([
-                'name'    => self::CONFIG_KEY_ALLOW_EMPTY_CATEGORY_EDITION,
-                'checked' => !empty($values[self::CONFIG_KEY_ALLOW_EMPTY_CATEGORY_EDITION]),
-            ]);
-        } else {
-            echo !empty($values[self::CONFIG_KEY_ALLOW_EMPTY_CATEGORY_EDITION]) ? __('Yes') : __('No');
-        }
-        echo "&nbsp;<span>" . t_ebenezerclone('Allow empty category edition') . "</span>&nbsp;$allow_empty_category_edition_tooltip";
-        echo "</div>";
-        $global_permission_tooltip = Html::showToolTip(
-            t_ebenezerclone('Checked: layer is enabled and profile matrix is respected. Unchecked: plugin does not enforce this layer and keeps core/other plugins rules.'),
-            ['display' => false]
-        );
-        echo "<div class='fw-bold mb-2'>" . t_ebenezerclone('Global permission by layer') . "&nbsp;$global_permission_tooltip</div>";
-        echo "<div class='row g-2'>";
-        foreach ($permission_groups as $group_key => $group_definition) {
-            $group_label = $group_definition['label'] ?? $group_key;
-            $group_tooltip = Html::showToolTip((string) ($group_definition['tooltip'] ?? ''), ['display' => false]);
-            $group_enabled = !empty($group_toggles[$group_key]);
-            echo "<div class='col-md-4'>";
-            if ($canedit) {
-                Html::showCheckbox([
-                    'name'    => sprintf('permission_group_toggles[%s]', $group_key),
-                    'checked' => $group_enabled,
-                ]);
-            } else {
-                echo $group_enabled ? __('Yes') : __('No');
-            }
-            echo "&nbsp;<span>$group_label</span>&nbsp;$group_tooltip";
-            echo "</div>";
-        }
-        echo "</div>";
-        echo "</td></tr>";
-
-        echo "<tr><th colspan='2'>" . t_ebenezerclone('Profile permissions matrix') . "</th></tr>";
-        echo "<tr class='tab_bg_1'><td colspan='2'>";
-        echo "<div class='card mb-3'><div class='card-header'><strong>" . t_ebenezerclone('Add profile authorization') . "</strong></div>";
-        echo "<div class='card-body'><div class='row g-3 align-items-end'>";
-        $entity_auth_tooltip = Html::showToolTip(
-            t_ebenezerclone('Entity defines where this profile authorization applies.'),
-            ['display' => false]
-        );
-        $profile_auth_tooltip = Html::showToolTip(
-            t_ebenezerclone('Profile defines which profile receives this authorization in the selected entity scope.'),
-            ['display' => false]
-        );
-        $recursive_auth_tooltip = Html::showToolTip(
-            t_ebenezerclone('Recursive set to Yes applies authorization to child entities. Recursive set to No applies only to selected entity.'),
-            ['display' => false]
-        );
-        echo "<div class='col-md-4'><label class='form-label'>" . Entity::getTypeName(1) . "&nbsp;$entity_auth_tooltip</label>";
-        if ($canedit) {
-            Entity::dropdown([
-                'name'   => 'new_authorization_entities_id',
-                'entity' => $_SESSION['glpiactiveentities'] ?? [],
-                'value'  => (int) ($_POST['new_authorization_entities_id'] ?? ($_SESSION['glpiactive_entity'] ?? 0)),
-            ]);
-        } else {
-            echo Dropdown::getDropdownName('glpi_entities', (int) ($_SESSION['glpiactive_entity'] ?? 0));
-        }
-        echo "</div>";
-        echo "<div class='col-md-3'><label class='form-label'>" . __('Profile') . "&nbsp;$profile_auth_tooltip</label>";
-        if ($canedit) {
-            Profile::dropdownUnder([
-                'name'  => 'new_authorization_profiles_id',
-                'value' => (int) ($_POST['new_authorization_profiles_id'] ?? Profile::getDefault()),
-            ]);
-        } else {
-            echo '-';
-        }
-        echo "</div>";
-        echo "<div class='col-md-2'><label class='form-label'>" . __('Recursive') . "&nbsp;$recursive_auth_tooltip</label>";
-        if ($canedit) {
-            Dropdown::showYesNo('new_authorization_is_recursive', (int) ($_POST['new_authorization_is_recursive'] ?? 0));
-        } else {
-            echo __('No');
-        }
-        echo "</div>";
-        echo "<div class='col-md-3 text-end'>";
-        if ($canedit) {
-            echo Html::submit(_sx('button', 'Add'), [
-                'name'    => 'update',
-                'class'   => 'btn btn-outline-primary',
-                'onclick' => "document.getElementById('ebz_profile_action').value='add';document.getElementById('ebz_remove_auth').value='';",
-            ]);
-        }
-        echo "</div></div></div></div>";
-
-        if (!count($authorizations)) {
-            echo "<div class='alert alert-info'>" . t_ebenezerclone('No profile authorization configured.') . "</div>";
-        } else {
-            $normalized_authorizations = [];
-            foreach ($authorizations as $authorization_id => $authorization) {
-                $entities_id = (int) ($authorization['entities_id'] ?? 0);
-                $profiles_id = (int) ($authorization['profiles_id'] ?? 0);
-                $is_recursive = !empty($authorization['is_recursive']);
-
-                $profile_name = $available_profiles[$profiles_id] ?? Dropdown::getDropdownName('glpi_profiles', $profiles_id);
-                if (!is_string($profile_name) || trim($profile_name) === '') {
-                    $profile_name = '#' . $profiles_id;
-                }
-                $profile_name = htmlspecialchars(Toolbox::stripTags($profile_name), ENT_QUOTES, 'UTF-8');
-
-                $normalized_authorizations[$authorization_id] = [
-                    'entities_id'   => $entities_id,
-                    'profile_name'  => $profile_name,
-                    'is_recursive'  => $is_recursive,
-                ];
-
-                echo Html::hidden(sprintf('authorized_profiles[%1$s][entities_id]', $authorization_id), ['value' => $entities_id]);
-                echo Html::hidden(sprintf('authorized_profiles[%1$s][profiles_id]', $authorization_id), ['value' => $profiles_id]);
-                echo Html::hidden(sprintf('authorized_profiles[%1$s][is_recursive]', $authorization_id), ['value' => $is_recursive ? 1 : 0]);
-            }
-
-            echo "<style id='ebz-authorizations-accordion-styles'>"
-                . "#ebz_authorizations_accordion{display:flex;flex-direction:column;gap:0.75rem;}"
-                . "#ebz_authorizations_accordion .ebz-auth-item{border:1px solid #d9dee8;border-radius:0.75rem;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,0.04);}"
-                . "#ebz_authorizations_accordion .ebz-auth-button{padding:1rem 1.25rem;box-shadow:none;border:0;background:#fff;}"
-                . "#ebz_authorizations_accordion .ebz-auth-button:not(.collapsed){background:#f8fafc;color:inherit;box-shadow:none;}"
-                . "#ebz_authorizations_accordion .ebz-auth-button:focus{box-shadow:none;}"
-                . "#ebz_authorizations_accordion .ebz-auth-summary{display:flex;flex-wrap:wrap;align-items:center;gap:0.75rem 1rem;width:calc(100% - 1.5rem);padding-right:0.5rem;}"
-                . "#ebz_authorizations_accordion .ebz-auth-profile{margin:0;}"
-                . "#ebz_authorizations_accordion .accordion-body{border-top:1px solid #e5e7eb;}"
-                . "</style>";
-            echo "<div class='accordion' id='ebz_authorizations_accordion'>";
-            $index = 0;
-            foreach ($normalized_authorizations as $authorization_id => $authorization_data) {
-                $index++;
-                $collapse_id = 'ebz_auth_collapse_' . $index;
-                $heading_id = 'ebz_auth_heading_' . $index;
-                $entity_label = Dropdown::getDropdownName('glpi_entities', (int) $authorization_data['entities_id']);
-                $recursive_label = $authorization_data['is_recursive'] ? __('Recursive') : __('No');
-                echo "<div class='accordion-item ebz-auth-item'>";
-                echo "<h2 class='accordion-header' id='$heading_id'>";
-                echo "<button class='accordion-button collapsed ebz-auth-button' type='button' data-bs-toggle='collapse' data-bs-target='#$collapse_id' aria-expanded='false' aria-controls='$collapse_id'>";
-                echo "<span class='ebz-auth-summary'>"
-                    . "<strong class='ebz-auth-profile'>" . $authorization_data['profile_name'] . "</strong>"
-                    . "<span class='text-muted'>$entity_label</span>"
-                    . "<span class='badge bg-secondary'>$recursive_label</span>"
-                    . "</span>";
-                echo "</button></h2>";
-                echo "<div id='$collapse_id' class='accordion-collapse collapse' aria-labelledby='$heading_id' data-bs-parent='#ebz_authorizations_accordion'>";
-                echo "<div class='accordion-body'>";
-                if ($canedit) {
-                    $remove_onclick = "document.getElementById('ebz_profile_action').value='remove';"
-                        . "document.getElementById('ebz_remove_auth').value='" . addslashes($authorization_id) . "';";
-                    $remove_profile_tooltip = Html::showToolTip(
-                        t_ebenezerclone('Permanently removes this profile authorization from the permissions matrix.'),
-                        ['display' => false]
-                    );
-                    echo "<div class='d-flex justify-content-start align-items-center gap-2 mb-2'>";
-                    echo Html::submit(t_ebenezerclone('Remove profile'), [
-                        'name'    => 'update',
-                        'class'   => 'btn btn-outline-danger btn-sm',
-                        'onclick' => $remove_onclick,
-                    ]);
-                    echo $remove_profile_tooltip;
-                    echo "</div>";
-                }
-                foreach ($permission_groups as $group_key => $group_definition) {
-                    $group_label = $group_definition['label'] ?? '';
-                    $group_permission_keys = array_values(array_filter(
-                        (array) ($group_definition['permissions'] ?? []),
-                        static fn($permission_key) => isset($permission_definitions[$permission_key])
-                    ));
-                    if (!count($group_permission_keys)) {
-                        continue;
-                    }
-
-                    echo "<div class='border rounded p-3 mb-2'>";
-                    echo "<div class='fw-bold mb-2'>$group_label</div>";
-                    echo "<div class='row g-2'>";
-                    $permission_col_class = in_array((string) $group_key, ['clone', 'assignment'], true)
-                        ? 'col-xl-4 col-lg-4 col-md-6 col-12'
-                        : 'col-md-6';
-                    foreach ($group_permission_keys as $permission_key) {
-                        $permission_definition = $permission_definitions[$permission_key];
-                        $tooltip = Html::showToolTip($permission_definition['tooltip'], ['display' => false]);
-                        $policy = !empty($permission_matrix[$authorization_id][$permission_key]);
-                        echo "<div class='$permission_col_class border rounded p-2'>";
-                        if ($canedit) {
-                            Html::showCheckbox([
-                                'name'    => sprintf('profile_permissions[%1$s][%2$s]', $authorization_id, $permission_key),
-                                'checked' => $policy,
-                            ]);
-                        } else {
-                            Html::showCheckbox([
-                                'checked'  => $policy,
-                                'disabled' => true,
-                            ]);
-                        }
-                        echo "&nbsp;<span>" . $permission_definition['label'] . "</span>&nbsp;$tooltip";
-                        echo "</div>";
-                    }
-                    echo "</div></div>";
-                }
-                if (count($ticket_property_definitions)) {
-                    echo "<div class='border rounded p-3 mb-2'>";
-                    $ticket_properties_policy_tooltip = Html::showToolTip(
-                        t_ebenezerclone('Checked: the field is enabled for editing for this profile. Unchecked: the field follows the global block rule. This policy only controls form editability and does not affect business rules.'),
-                        ['display' => false]
-                    );
-                    echo "<div class='fw-bold mb-2'>" . t_ebenezerclone('Ticket properties policy') . "&nbsp;$ticket_properties_policy_tooltip</div>";
-                    echo "<div class='row g-1'>";
-                    foreach ($ticket_property_definitions as $property_key => $property_definition) {
-                        $property_label = (string) ($property_definition['label'] ?? $property_key);
-                        $is_blocked = !empty($ticket_property_policies[$authorization_id][$property_key]);
-                        $is_allowed = !$is_blocked;
-                        echo "<div class='col-xl-4 col-lg-4 col-md-6 col-12 border rounded p-2'>";
-                        if ($canedit) {
-                            echo Html::hidden(
-                                sprintf('ticket_property_profile_policies[%1$s][%2$s]', $authorization_id, $property_key),
-                                ['value' => 1]
-                            );
-                            Html::showCheckbox([
-                                'name'    => sprintf('ticket_property_profile_policies[%1$s][%2$s]', $authorization_id, $property_key),
-                                'value'   => 0,
-                                'checked' => $is_allowed,
-                                'zero_on_empty' => false,
-                            ]);
-                            echo "&nbsp;<span style='color: inherit;'>" . htmlspecialchars(Toolbox::stripTags($property_label), ENT_QUOTES, 'UTF-8') . "</span>";
-                        } else {
-                            echo htmlspecialchars(
-                                Toolbox::stripTags($property_label),
-                                ENT_QUOTES,
-                                'UTF-8'
-                            );
-                        }
-                        echo "</div>";
-                    }
-                    echo "</div></div>";
-                }
-                echo "</div></div></div>";
-            }
-            echo "</div>";
-        }
-        echo "</td></tr>";
-
         if ($canedit) {
             echo "<tr class='tab_bg_1'><td colspan='2' class='center'>";
             echo Html::submit(_sx('button', 'Save'), [
                 'name'    => 'update',
                 'class'   => 'btn btn-primary',
-                'onclick' => "document.getElementById('ebz_profile_action').value='save';document.getElementById('ebz_remove_auth').value='';",
             ]);
             echo "</td></tr>";
         }

@@ -1,5 +1,7 @@
 <?php
 
+use Glpi\Event;
+
 if (!defined('GLPI_ROOT')) {
     die('Sorry. You cannot access directly to this file');
 }
@@ -8,27 +10,6 @@ class PluginEbenezercloneClone extends CommonGLPI
 {
     public static $rightname = 'plugin_ebenezerclone_clone';
     private const TIMELINE_LOG_SEARCH_OPTION = 21;
-    private const LOCKED_PROPERTY_FIELDS_AFTER_OPEN = [
-        'date',
-        'time_to_resolve',
-        'solvedate',
-        'closedate',
-        'type',
-        'itilcategories_id',
-        'status',
-        'requesttypes_id',
-        'urgency',
-        'impact',
-        'priority',
-        'locations_id',
-        '_contracts_id',
-        'actiontime',
-        'slas_id_ttr',
-        'slas_id_tto',
-        'olas_id_ttr',
-        'olas_id_tto',
-        'time_to_own',
-    ];
     private const TIMELINE_LOG_CLONE_CREATED = 'timeline_log_clone_created';
     private const TIMELINE_LOG_CLONE_SOURCE = 'timeline_log_clone_source';
     private const TIMELINE_LOG_TICKET_LINK = 'timeline_log_ticket_link';
@@ -36,9 +17,7 @@ class PluginEbenezercloneClone extends CommonGLPI
     private const TIMELINE_LOG_ITEMS_COPIED = 'timeline_log_items_copied';
     private const TIMELINE_LOG_ACTORS_COPIED = 'timeline_log_actors_copied';
     private const TIMELINE_LOG_CLONE_FAILURE = 'timeline_log_clone_failure';
-    private const ACTOR_ROLE_REQUESTER = 'requester';
-    private const ACTOR_ROLE_OBSERVER = 'observer';
-    private const ACTOR_ROLE_ASSIGN = 'assign';
+    private const CLONED_TITLE_PREFIX = '(Clonado)';
 
     public function getRights($interface = 'central')
     {
@@ -72,62 +51,42 @@ class PluginEbenezercloneClone extends CommonGLPI
     private static function canShowForItem(Ticket $ticket)
     {
         return $ticket->can($ticket->getID(), READ)
-            && self::canCloneTicketInCurrentProfile((int) $ticket->getField('entities_id'))
-            && Ticket::canCreate();
+            && self::canCloneTicketInCurrentProfile((int) $ticket->getField('entities_id'));
     }
 
     public static function canCloneTicketInCurrentProfile(?int $entity_id = null): bool
     {
-        if (!Ticket::canCreate() || !PluginEbenezercloneConfig::isCloneOperationsEnabled()) {
+        $resolved_entity_id = self::resolveAuthorizationEntityId($entity_id);
+        $profile_id = (int) ($_SESSION['glpiactiveprofile']['id'] ?? 0);
+        if ($profile_id <= 0) {
             return false;
         }
 
-        $permission = PluginEbenezercloneConfig::hasProfilePermission(
+        return PluginEbenezercloneConfig::hasProfilePermission(
             PluginEbenezercloneConfig::PERMISSION_CLONE_TICKET,
-            null,
-            (int) ($entity_id ?? ($_SESSION['glpiactive_entity'] ?? 0))
-        );
-        return $permission === true;
+            $profile_id,
+            $resolved_entity_id
+        ) === true;
     }
 
     public static function canUseMassiveCloneActionInCurrentProfile(?int $entity_id = null): bool
     {
-        if (!Ticket::canCreate() || !PluginEbenezercloneConfig::isCloneOperationsEnabled()) {
-            return false;
-        }
-
-        // Global OFF: Ebenezer does not interfere for this rule.
-        if (!PluginEbenezercloneConfig::isGlobalCloneActionsBlocked()) {
-            return true;
-        }
-
-        // Global ON: profile matrix can explicitly allow this action.
-        $permission = PluginEbenezercloneConfig::hasProfilePermission(
-            PluginEbenezercloneConfig::PERMISSION_MASSIVE_CLONE,
-            null,
-            (int) ($entity_id ?? ($_SESSION['glpiactive_entity'] ?? 0))
-        );
-        return $permission === true;
+        return self::canCloneTicketInCurrentProfile($entity_id);
     }
 
     public static function canUseTicketCloneActionInCurrentProfile(?int $entity_id = null): bool
     {
-        if (!Ticket::canCreate() || !PluginEbenezercloneConfig::isCloneOperationsEnabled()) {
-            return false;
+        return self::canCloneTicketInCurrentProfile($entity_id);
+    }
+
+    private static function resolveAuthorizationEntityId(?int $entity_id): int
+    {
+        if ($entity_id !== null && $entity_id >= 0) {
+            return $entity_id;
         }
 
-        // Global OFF: Ebenezer does not interfere for this rule.
-        if (!PluginEbenezercloneConfig::isGlobalCloneActionsBlocked()) {
-            return true;
-        }
-
-        // Global ON: profile matrix can explicitly allow this action.
-        $permission = PluginEbenezercloneConfig::hasProfilePermission(
-            PluginEbenezercloneConfig::PERMISSION_TICKET_CLONE_ACTION,
-            null,
-            (int) ($entity_id ?? ($_SESSION['glpiactive_entity'] ?? 0))
-        );
-        return $permission === true;
+        $active_entity_id = (int) ($_SESSION['glpiactive_entity'] ?? 0);
+        return $active_entity_id >= 0 ? $active_entity_id : 0;
     }
 
     public static function showCloneForm(Ticket $ticket)
@@ -200,8 +159,8 @@ class PluginEbenezercloneClone extends CommonGLPI
             $entity_id,
             $rand,
             $is_category_readonly,
-            (string) ($field_values['name'] ?? ''),
-            (int) ($field_values['category'] ?? 0)
+            PluginEbenezercloneConfig::shouldRecalculateTitleFromCategory(),
+            (string) ($field_values['name'] ?? '')
         );
     }
 
@@ -303,8 +262,8 @@ class PluginEbenezercloneClone extends CommonGLPI
         int $entity_id,
         int $rand,
         bool $is_category_readonly,
-        string $source_name,
-        int $source_category_id
+        bool $should_recalculate_title_from_category,
+        string $source_name
     )
     {
         global $CFG_GLPI;
@@ -323,7 +282,7 @@ class PluginEbenezercloneClone extends CommonGLPI
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
         );
         $source_name_js = json_encode($source_name, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $source_category_id_js = (int) $source_category_id;
+        $should_recalculate_title_js = $should_recalculate_title_from_category ? 'true' : 'false';
 
         $sync_lines = [];
         foreach ($definitions as $key => $def) {
@@ -372,12 +331,14 @@ var getSelectedCloneCategoryLabel$rand = function() {
 
 var cloneCurrentType$rand = null;
 var cloneCategoryLoading$rand = false;
+var cloneCategoryPendingType$rand = null;
+var cloneCategoryPendingReset$rand = false;
 var cloneCategoryReadonly$rand = $is_category_readonly_js;
 var waitCategoryMessage$rand = $wait_category_message_js;
 var mandatoryCategoryMessage$rand = $category_mandatory_message_js;
 var mandatoryTypeMessage$rand = $type_mandatory_message_js;
 var cloneSourceName$rand = $source_name_js;
-var cloneSourceCategoryId$rand = $source_category_id_js;
+var shouldRecalculateTitleFromCategory$rand = $should_recalculate_title_js;
 
 var setCloneCategoryLoading$rand = function(loading) {
     cloneCategoryLoading$rand = loading;
@@ -423,9 +384,21 @@ var buildCloneNameFromCategory$rand = function() {
     return formatCloneTitleFromCategoryLabel$rand(label, '');
 };
 
+var addCloneTitlePrefix$rand = function(title) {
+    var value = (title || '').toString();
+    var prefix = '(Clonado)';
+    if (!value) {
+        return prefix;
+    }
+    if (value.indexOf(prefix) === 0) {
+        return value;
+    }
+    return prefix + ' ' + value;
+};
+
 var refreshCloneNamePreview$rand = function() {
     var selectedCategory = parseInt($('#$form_name [name=itilcategories_id]').val(), 10) || 0;
-    var shouldAutoGenerate = selectedCategory > 0 && selectedCategory !== cloneSourceCategoryId$rand;
+    var shouldAutoGenerate = shouldRecalculateTitleFromCategory$rand && selectedCategory > 0;
 
     var nextTitle = cloneSourceName$rand;
     if (shouldAutoGenerate) {
@@ -434,6 +407,7 @@ var refreshCloneNamePreview$rand = function() {
             nextTitle = built;
         }
     }
+    nextTitle = addCloneTitlePrefix$rand(nextTitle);
 
     var nameField = $('#$form_name [name=name]');
     if (nameField.length) {
@@ -447,13 +421,19 @@ var refreshCloneNamePreview$rand = function() {
 };
 
 var reloadCloneCategory$rand = function(resetValue) {
+    var type = ($('#$form_name [name=type]').val() || '').toString();
+    var shouldResetValue = !!resetValue;
     if (cloneCategoryLoading$rand) {
+        cloneCategoryPendingType$rand = type;
+        cloneCategoryPendingReset$rand = cloneCategoryPendingReset$rand || shouldResetValue;
         return;
     }
 
-    var type = $('#$form_name [name=type]').val();
+    cloneCategoryPendingType$rand = null;
+    cloneCategoryPendingReset$rand = false;
+
     var currentValue = 0;
-    if (!resetValue) {
+    if (!shouldResetValue) {
         currentValue = parseInt($('#$form_name [name=itilcategories_id]').val(), 10) || 0;
         if (currentValue <= 0) {
             currentValue = parseInt($('#$form_name [name=clone_itilcategories_id]').val(), 10) || 0;
@@ -471,6 +451,18 @@ var reloadCloneCategory$rand = function(resetValue) {
         },
         function() {
             setCloneCategoryLoading$rand(false);
+            refreshCloneNamePreview$rand();
+
+            if (cloneCategoryPendingType$rand !== null) {
+                var pendingType = cloneCategoryPendingType$rand;
+                var pendingReset = cloneCategoryPendingReset$rand;
+                cloneCategoryPendingType$rand = null;
+                cloneCategoryPendingReset$rand = false;
+
+                if (pendingType !== type || pendingReset) {
+                    reloadCloneCategory$rand(true);
+                }
+            }
         }
     );
 };
@@ -535,11 +527,6 @@ JAVASCRIPT;
         }
         $ticket->check($ticket->getID(), READ);
 
-        if (!Ticket::canCreate()) {
-            Session::addMessageAfterRedirect(__('You do not have permission to create tickets.'), false, ERROR);
-            return null;
-        }
-
         if (!self::canCloneTicketInCurrentProfile((int) $ticket->getField('entities_id'))) {
             Session::addMessageAfterRedirect(__('You do not have permission to perform this action.'), false, ERROR);
             return null;
@@ -556,10 +543,10 @@ JAVASCRIPT;
                 $clone_value = $input[$def['clone_name']] ?? null;
                 $form_value  = $input[$def['form_name']] ?? null;
 
-                if (self::isFilledInputValue($clone_value)) {
-                    $resolved[$key] = $clone_value;
-                } elseif (self::isFilledInputValue($form_value)) {
+                if (self::isFilledInputValue($form_value)) {
                     $resolved[$key] = $form_value;
+                } elseif (self::isFilledInputValue($clone_value)) {
+                    $resolved[$key] = $clone_value;
                 } elseif ($key === 'category') {
                     $resolved[$key] = 0;
                 } else {
@@ -570,10 +557,10 @@ JAVASCRIPT;
             }
         }
 
-        $name = (string) $ticket->getField('name');
-        $content = (string) ($resolved['content'] ?? $ticket->getField('content'));
+        $name = (string) ($resolved['name'] ?? $ticket->getField('name'));
+        $original_content = (string) $ticket->getField('content');
+        $content = $original_content;
         $type = (int) ($resolved['type'] ?? $ticket->getField('type'));
-        $source_category_id = (int) $ticket->getField('itilcategories_id');
         $itilcategories_id = (int) ($resolved['category'] ?? $ticket->getField('itilcategories_id'));
         $entities_id = (int) $ticket->getField('entities_id');
 
@@ -587,12 +574,14 @@ JAVASCRIPT;
             return null;
         }
 
-        if ($itilcategories_id > 0 && $itilcategories_id !== $source_category_id) {
+        if (PluginEbenezercloneConfig::shouldRecalculateTitleFromCategory() && $itilcategories_id > 0) {
             $computed_name_without_id = self::buildTitleFromCategory($itilcategories_id, '', '');
             if ($computed_name_without_id !== '') {
                 $name = $computed_name_without_id;
             }
         }
+
+        $name = self::addClonedTitlePrefix($name);
 
         if ($itilcategories_id > 0) {
             $target_category = new ITILCategory();
@@ -612,7 +601,7 @@ JAVASCRIPT;
 
         $new = new Ticket();
         if ($content === '') {
-            $content = (string) $ticket->getField('content');
+            $content = $original_content;
         }
 
         $new_input = [];
@@ -647,12 +636,10 @@ JAVASCRIPT;
         if (!array_key_exists('entities_id', $new_input)) {
             $new_input['entities_id'] = $entities_id;
         }
-        if (!array_key_exists('name', $new_input)) {
-            $new_input['name'] = $name;
-        }
-        if (!array_key_exists('type', $new_input)) {
-            $new_input['type'] = $type;
-        }
+        // Form values are the source of truth for clone target identity fields.
+        $new_input['name'] = $name;
+        $new_input['type'] = $type;
+        $new_input['itilcategories_id'] = $itilcategories_id;
         if (!array_key_exists('content', $new_input)) {
             $new_input['content'] = $content;
         }
@@ -676,15 +663,22 @@ JAVASCRIPT;
 
         $new_id = $new->add($new_input);
         if (!$new_id) {
+            $failure_messages = self::getCloneFailureMessages($new);
+            $failure_summary = self::formatErrorsForLog($failure_messages);
+
             Toolbox::logDebug(
                 'EBENEZERCLONE cloneTicket failed',
                 [
-                    'source_ticket_id' => (int) $ticket->getID(),
-                    'source_entity_id' => (int) $ticket->getField('entities_id'),
-                    'target_entity_id' => (int) $entities_id,
-                    'new_input'        => $new_input,
-                    'ticket_input'     => $input,
-                    'ticket_errors'    => $new->getErrors(),
+                    'source_ticket_id'   => (int) $ticket->getID(),
+                    'source_entity_id'   => (int) $ticket->getField('entities_id'),
+                    'source_type'        => (int) $ticket->getField('type'),
+                    'source_category_id' => (int) $ticket->getField('itilcategories_id'),
+                    'target_entity_id'   => (int) $entities_id,
+                    'target_type'        => (int) $type,
+                    'target_category_id' => (int) $itilcategories_id,
+                    'failure_messages'   => $failure_messages,
+                    'new_input_keys'     => array_keys($new_input),
+                    'new_input_safe'     => self::sanitizeCloneInputForLog($new_input),
                 ]
             );
             self::logTimelineMessageIfEnabled(
@@ -692,37 +686,46 @@ JAVASCRIPT;
                 (int) $ticket->getID(),
                 sprintf(
                     t_ebenezerclone('Clone failed for this ticket: %1$s'),
-                    self::formatErrorsForLog($new->getErrors())
+                    $failure_summary
                 )
             );
-            Session::addMessageAfterRedirect(__('Failed to clone the ticket.'), false, ERROR);
+            Session::addMessageAfterRedirect(
+                sprintf(
+                    t_ebenezerclone('Failed to clone the ticket. Details: %1$s'),
+                    $failure_summary
+                ),
+                false,
+                ERROR
+            );
             return null;
         }
 
-        $copied_items = 0;
+        if ($new->getFromDB($new_id)) {
+            $new->fields['content'] = $original_content;
+            if (!$new->updateInDB(['content'], [])) {
+                Toolbox::logDebug(
+                    'EBENEZERCLONE cloneTicket content preservation failed',
+                    [
+                        'source_ticket_id' => (int) $ticket->getID(),
+                        'target_ticket_id' => (int) $new_id,
+                    ]
+                );
+            }
+        }
+
+        $copied_related_ticket_links = 0;
         if (PluginEbenezercloneConfig::shouldCopyCloneElement('items')) {
-            $copied_items = self::copyItems($ticket, $new_id);
+            $copied_related_ticket_links = self::copyRelatedTicketLinks($ticket, $new_id);
+        }
+
+        $copied_related_items = 0;
+        if (PluginEbenezercloneConfig::shouldCopyCloneElement('related_items')) {
+            $copied_related_items = self::copyRelatedItems($ticket, $new_id);
         }
 
         $copied_documents = 0;
         if (PluginEbenezercloneConfig::shouldCopyCloneElement('documents')) {
             $copied_documents = self::copyDocuments($ticket, $new_id);
-        }
-
-        if (PluginEbenezercloneConfig::shouldCopyCloneElement('followup_history')) {
-            self::copyFollowupHistory($ticket, $new_id);
-        }
-        if (PluginEbenezercloneConfig::shouldCopyCloneElement('tasks')) {
-            self::copyTasks($ticket, $new_id);
-        }
-        if (PluginEbenezercloneConfig::shouldCopyCloneElement('solutions')) {
-            self::copySolutions($ticket, $new_id);
-        }
-        if (PluginEbenezercloneConfig::shouldCopyCloneElement('validations')) {
-            self::copyValidations($ticket, $new_id);
-        }
-        if (PluginEbenezercloneConfig::shouldCopyCloneElement('satisfaction')) {
-            self::copySatisfaction($ticket, $new_id);
         }
 
         $link_created = false;
@@ -734,21 +737,6 @@ JAVASCRIPT;
                 'link'         => Ticket_Ticket::LINK_TO,
             ]);
         }
-        if (PluginEbenezercloneConfig::shouldCopyCloneElement('ticket_relations')) {
-            self::copyTicketRelations($ticket, $new_id);
-        }
-        if (PluginEbenezercloneConfig::shouldCopyCloneElement('contracts')) {
-            self::copyContracts($ticket, $new_id);
-        }
-        if (PluginEbenezercloneConfig::shouldCopyCloneElement('projects')) {
-            self::copyProjects($ticket, $new_id);
-        }
-        if (PluginEbenezercloneConfig::shouldCopyCloneElement('problem_links')) {
-            self::copyProblemLinks($ticket, $new_id);
-        }
-        if (PluginEbenezercloneConfig::shouldCopyCloneElement('change_links')) {
-            self::copyChangeLinks($ticket, $new_id);
-        }
 
         $followups_added = 0;
         if (PluginEbenezercloneConfig::shouldCopyCloneElement('followups')) {
@@ -758,16 +746,14 @@ JAVASCRIPT;
             $new_id,
             $ticket->getID(),
             $copied_actors,
-            $copied_items,
+            $copied_related_ticket_links,
+            $copied_related_items,
             $copied_documents,
             $followups_added,
             $link_created
         );
 
-        $expected_category_for_validation = PluginEbenezercloneConfig::shouldCopyCloneElement('itilcategories_id')
-            ? $itilcategories_id
-            : 0;
-        self::validatePostCloneConsistency($ticket, $new_id, $expected_category_for_validation);
+        self::validatePostCloneConsistency($ticket, $new_id, $name, $type, $itilcategories_id);
 
         $new_ticket_link = Html::link(
             sprintf('#%1$s', $new_id),
@@ -883,24 +869,114 @@ JAVASCRIPT;
         return '';
     }
 
-    private static function copyItems(Ticket $ticket, $new_id)
+    private static function copyRelatedTicketLinks(Ticket $ticket, int $new_id): int
     {
         global $DB;
 
-        $dbu = new DbUtils();
-        $fkey = $dbu->getForeignKeyFieldForTable($ticket->getTable());
-        $crit = [$fkey => $ticket->getID()];
-
-        $item = new Item_Ticket();
+        $source_ticket_id = (int) $ticket->getID();
+        $link = new Ticket_Ticket();
         $count = 0;
-        foreach ($DB->request($item->getTable(), $crit) as $dataitem) {
-            if ($item->add([
-                'itemtype' => $dataitem['itemtype'],
-                'items_id' => $dataitem['items_id'],
-                'tickets_id' => $new_id,
+        foreach ($DB->request('glpi_tickets_tickets', [
+            'OR' => [
+                ['tickets_id_1' => $source_ticket_id],
+                ['tickets_id_2' => $source_ticket_id],
+            ],
+        ]) as $row) {
+            $tickets_id_1 = (int) ($row['tickets_id_1'] ?? 0);
+            $tickets_id_2 = (int) ($row['tickets_id_2'] ?? 0);
+            $relation_type = (int) ($row['link'] ?? 0);
+
+            if ($tickets_id_1 <= 0 || $tickets_id_2 <= 0) {
+                continue;
+            }
+
+            if ($tickets_id_1 === $source_ticket_id) {
+                $tickets_id_1 = $new_id;
+            } elseif ($tickets_id_2 === $source_ticket_id) {
+                $tickets_id_2 = $new_id;
+            } else {
+                continue;
+            }
+
+            if ($tickets_id_1 === $tickets_id_2) {
+                continue;
+            }
+
+            if (countElementsInTable('glpi_tickets_tickets', [
+                'tickets_id_1' => $tickets_id_1,
+                'tickets_id_2' => $tickets_id_2,
+                'link' => $relation_type,
+            ]) > 0) {
+                continue;
+            }
+
+            if ($link->add([
+                'tickets_id_1' => $tickets_id_1,
+                'tickets_id_2' => $tickets_id_2,
+                'link' => $relation_type,
             ])) {
                 $count++;
             }
+        }
+
+        return $count;
+    }
+
+    private static function copyRelatedItems(Ticket $ticket, int $new_id): int
+    {
+        global $DB;
+
+        $source_ticket_id = (int) $ticket->getID();
+        $count = 0;
+        $item_ticket = new Item_Ticket();
+        foreach ($DB->request($item_ticket->getTable(), ['tickets_id' => $source_ticket_id]) as $row) {
+            $itemtype = (string) ($row['itemtype'] ?? '');
+            $items_id = (int) ($row['items_id'] ?? 0);
+            if ($itemtype === '' || $items_id <= 0) {
+                continue;
+            }
+
+            $related_item = getItemForItemtype($itemtype);
+            if (!$related_item || !$related_item->getFromDB($items_id)) {
+                Toolbox::logDebug(
+                    'EBENEZERCLONE copyRelatedItems skipped missing item',
+                    [
+                        'source_ticket_id' => $source_ticket_id,
+                        'target_ticket_id' => (int) $new_id,
+                        'itemtype'         => $itemtype,
+                        'items_id'         => $items_id,
+                    ]
+                );
+                continue;
+            }
+
+            $item_ticket = new Item_Ticket();
+            if ($item_ticket->add([
+                'tickets_id'  => (int) $new_id,
+                'itemtype'    => $itemtype,
+                'items_id'    => $items_id,
+                '_no_message' => true,
+            ])) {
+                Event::log(
+                    (int) $new_id,
+                    'ticket',
+                    4,
+                    'tracking',
+                    sprintf(__('%s adds a link with an item'), $_SESSION['glpiname'] ?? 'anonymous')
+                );
+                $count++;
+                continue;
+            }
+
+            Toolbox::logDebug(
+                'EBENEZERCLONE copyRelatedItems failed',
+                [
+                    'source_ticket_id' => $source_ticket_id,
+                    'target_ticket_id' => (int) $new_id,
+                    'itemtype'         => $itemtype,
+                    'items_id'         => $items_id,
+                ]
+            );
         }
 
         return $count;
@@ -908,320 +984,31 @@ JAVASCRIPT;
 
     private static function copyDocuments(Ticket $ticket, int $new_id): int
     {
-        return self::copyDocumentLinks($ticket->getType(), (int) $ticket->getID(), $ticket->getType(), $new_id);
-    }
-
-    private static function copyFollowupHistory(Ticket $ticket, int $new_id): int
-    {
-        global $DB;
-
-        $followup = new ITILFollowup();
-        $count = 0;
-        foreach ($DB->request([
-            'FROM'  => $followup->getTable(),
-            'WHERE' => [
-                'itemtype' => $ticket->getType(),
-                'items_id' => (int) $ticket->getID(),
-            ],
-            'ORDER' => ['date' => 'ASC', 'id' => 'ASC'],
-        ]) as $row) {
-            $content = (string) ($row['content'] ?? '');
-            if ($content === '') {
-                continue;
-            }
-
-            $new_followup_id = (int) $followup->add([
-                'itemtype'          => $ticket->getType(),
-                'items_id'          => $new_id,
-                'content'           => $content,
-                'is_private'        => (int) ($row['is_private'] ?? 0),
-                'users_id'          => (int) ($row['users_id'] ?? 0),
-                'requesttypes_id'   => (int) ($row['requesttypes_id'] ?? 0),
-                'date'              => $row['date'] ?? null,
-                'timeline_position' => (int) ($row['timeline_position'] ?? 0),
-                '_disablenotif'     => true,
-            ]);
-            if ($new_followup_id <= 0) {
-                Toolbox::logDebug('EBENEZERCLONE copyFollowupHistory failed', [
-                    'source_ticket_id' => (int) $ticket->getID(),
-                    'target_ticket_id' => $new_id,
-                    'source_followup'  => (int) ($row['id'] ?? 0),
-                ]);
-                continue;
-            }
-
-            $count++;
-            if (PluginEbenezercloneConfig::shouldCopyCloneElement('followup_documents')) {
-                self::copyDocumentLinks(ITILFollowup::class, (int) $row['id'], ITILFollowup::class, $new_followup_id);
-            }
-        }
-
-        return $count;
-    }
-
-    private static function copyTasks(Ticket $ticket, int $new_id): int
-    {
-        global $DB;
-
-        $task = new TicketTask();
-        $count = 0;
-        foreach ($DB->request([
-            'FROM'  => $task->getTable(),
-            'WHERE' => ['tickets_id' => (int) $ticket->getID()],
-            'ORDER' => ['date' => 'ASC', 'id' => 'ASC'],
-        ]) as $row) {
-            $clone_row = $row;
-            unset($clone_row['id']);
-            $clone_row['tickets_id'] = $new_id;
-            $clone_row['uuid'] = \Ramsey\Uuid\Uuid::uuid4()->toString();
-            $clone_row['sourceitems_id'] = 0;
-            $clone_row['sourceof_items_id'] = 0;
-
-            if (!$DB->insert($task->getTable(), $clone_row)) {
-                Toolbox::logDebug('EBENEZERCLONE copyTasks failed', [
-                    'source_ticket_id' => (int) $ticket->getID(),
-                    'target_ticket_id' => $new_id,
-                    'source_task_id'   => (int) ($row['id'] ?? 0),
-                ]);
-                continue;
-            }
-
-            $new_task_id = (int) $DB->insertId();
-            $count++;
-            if (PluginEbenezercloneConfig::shouldCopyCloneElement('task_documents')) {
-                self::copyDocumentLinks(TicketTask::class, (int) $row['id'], TicketTask::class, $new_task_id);
-            }
-        }
-
-        return $count;
-    }
-
-    private static function copySolutions(Ticket $ticket, int $new_id): int
-    {
-        global $DB;
-
-        $solution = new ITILSolution();
-        $count = 0;
-        foreach ($DB->request([
-            'FROM'  => $solution->getTable(),
-            'WHERE' => [
-                'itemtype' => $ticket->getType(),
-                'items_id' => (int) $ticket->getID(),
-            ],
-            'ORDER' => ['date_creation' => 'ASC', 'id' => 'ASC'],
-        ]) as $row) {
-            $clone_row = $row;
-            unset($clone_row['id']);
-            $clone_row['itemtype'] = $ticket->getType();
-            $clone_row['items_id'] = $new_id;
-            $clone_row['itilfollowups_id'] = null;
-
-            if (!$DB->insert($solution->getTable(), $clone_row)) {
-                Toolbox::logDebug('EBENEZERCLONE copySolutions failed', [
-                    'source_ticket_id' => (int) $ticket->getID(),
-                    'target_ticket_id' => $new_id,
-                    'source_solution'  => (int) ($row['id'] ?? 0),
-                ]);
-                continue;
-            }
-
-            $new_solution_id = (int) $DB->insertId();
-            $count++;
-            if (PluginEbenezercloneConfig::shouldCopyCloneElement('solution_documents')) {
-                self::copyDocumentLinks(ITILSolution::class, (int) $row['id'], ITILSolution::class, $new_solution_id);
-            }
-        }
-
-        return $count;
-    }
-
-    private static function copyValidations(Ticket $ticket, int $new_id): int
-    {
-        global $DB;
-
-        $validation = new TicketValidation();
-        $count = 0;
-        foreach ($DB->request([
-            'FROM'  => $validation->getTable(),
-            'WHERE' => ['tickets_id' => (int) $ticket->getID()],
-            'ORDER' => ['submission_date' => 'ASC', 'id' => 'ASC'],
-        ]) as $row) {
-            $clone_row = $row;
-            unset($clone_row['id']);
-            $clone_row['tickets_id'] = $new_id;
-
-            if (!$DB->insert($validation->getTable(), $clone_row)) {
-                Toolbox::logDebug('EBENEZERCLONE copyValidations failed', [
-                    'source_ticket_id'     => (int) $ticket->getID(),
-                    'target_ticket_id'     => $new_id,
-                    'source_validation_id' => (int) ($row['id'] ?? 0),
-                ]);
-                continue;
-            }
-
-            $new_validation_id = (int) $DB->insertId();
-            $count++;
-            if (PluginEbenezercloneConfig::shouldCopyCloneElement('validation_documents')) {
-                self::copyDocumentLinks(TicketValidation::class, (int) $row['id'], TicketValidation::class, $new_validation_id);
-            }
-        }
-
-        return $count;
-    }
-
-    private static function copySatisfaction(Ticket $ticket, int $new_id): int
-    {
-        global $DB;
-
-        $satisfaction = new TicketSatisfaction();
-        foreach ($DB->request($satisfaction->getTable(), ['tickets_id' => (int) $ticket->getID()]) as $row) {
-            $clone_row = $row;
-            unset($clone_row['id']);
-            $clone_row['tickets_id'] = $new_id;
-            if ($DB->insert($satisfaction->getTable(), $clone_row)) {
-                return 1;
-            }
-
-            Toolbox::logDebug('EBENEZERCLONE copySatisfaction failed', [
-                'source_ticket_id' => (int) $ticket->getID(),
-                'target_ticket_id' => $new_id,
-            ]);
-        }
-
-        return 0;
-    }
-
-    private static function copyContracts(Ticket $ticket, int $new_id): int
-    {
-        return self::copySimpleRelationRows(
-            Ticket_Contract::getTable(),
-            ['tickets_id' => (int) $ticket->getID()],
-            ['tickets_id' => $new_id]
-        );
-    }
-
-    private static function copyProjects(Ticket $ticket, int $new_id): int
-    {
-        return self::copySimpleRelationRows(
-            Itil_Project::getTable(),
-            [
-                'itemtype' => $ticket->getType(),
-                'items_id' => (int) $ticket->getID(),
-            ],
-            [
-                'itemtype' => $ticket->getType(),
-                'items_id' => $new_id,
-            ]
-        );
-    }
-
-    private static function copyProblemLinks(Ticket $ticket, int $new_id): int
-    {
-        return self::copySimpleRelationRows(
-            Problem_Ticket::getTable(),
-            ['tickets_id' => (int) $ticket->getID()],
-            ['tickets_id' => $new_id]
-        );
-    }
-
-    private static function copyChangeLinks(Ticket $ticket, int $new_id): int
-    {
-        return self::copySimpleRelationRows(
-            Change_Ticket::getTable(),
-            ['tickets_id' => (int) $ticket->getID()],
-            ['tickets_id' => $new_id]
-        );
-    }
-
-    private static function copyTicketRelations(Ticket $ticket, int $new_id): int
-    {
-        global $DB;
-
-        $table = Ticket_Ticket::getTable();
-        $count = 0;
-
-        foreach ($DB->request($table, ['tickets_id_1' => (int) $ticket->getID()]) as $row) {
-            $link = new Ticket_Ticket();
-            if ($link->add([
-                'tickets_id_1' => $new_id,
-                'tickets_id_2' => (int) ($row['tickets_id_2'] ?? 0),
-                'link'         => (int) ($row['link'] ?? Ticket_Ticket::LINK_TO),
-            ])) {
-                $count++;
-            }
-        }
-
-        foreach ($DB->request($table, ['tickets_id_2' => (int) $ticket->getID()]) as $row) {
-            $link = new Ticket_Ticket();
-            if ($link->add([
-                'tickets_id_1' => (int) ($row['tickets_id_1'] ?? 0),
-                'tickets_id_2' => $new_id,
-                'link'         => (int) ($row['link'] ?? Ticket_Ticket::LINK_TO),
-            ])) {
-                $count++;
-            }
-        }
-
-        return $count;
-    }
-
-    private static function copySimpleRelationRows(string $table, array $where, array $overrides): int
-    {
-        global $DB;
-
-        $count = 0;
-        foreach ($DB->request($table, $where) as $row) {
-            $clone_row = array_merge($row, $overrides);
-            unset($clone_row['id']);
-            if ($DB->insert($table, $clone_row)) {
-                $count++;
-            }
-        }
-
-        return $count;
-    }
-
-    private static function copyDocumentLinks(string $source_itemtype, int $source_id, string $target_itemtype, int $target_id): int
-    {
         global $DB;
 
         $document_item = new Document_Item();
         $count = 0;
         foreach ($DB->request($document_item->getTable(), [
-            'itemtype' => $source_itemtype,
-            'items_id' => $source_id,
+            'itemtype' => Ticket::class,
+            'items_id' => (int) $ticket->getID(),
         ]) as $row) {
-            $minimal_input = [
+            $input = [
                 'documents_id' => (int) $row['documents_id'],
-                'itemtype'     => $target_itemtype,
-                'items_id'     => $target_id,
+                'itemtype'     => Ticket::class,
+                'items_id'     => (int) $new_id,
                 'entities_id'  => (int) ($row['entities_id'] ?? 0),
                 'is_recursive' => (int) ($row['is_recursive'] ?? 1),
+                'users_id'     => (int) ($row['users_id'] ?? 0),
             ];
 
-            $input = $minimal_input;
-            $users_id = (int) ($row['users_id'] ?? 0);
-            if ($users_id > 0) {
-                $input['users_id'] = $users_id;
-            }
-
             $timeline_position = (int) ($row['timeline_position'] ?? 0);
-            if ($timeline_position !== 0) {
+            if ($timeline_position > 0) {
                 $input['timeline_position'] = $timeline_position;
             }
 
-            if ($document_item->add($input) || $document_item->add($minimal_input)) {
+            if ($document_item->add($input)) {
                 $count++;
-                continue;
             }
-
-            Toolbox::logDebug('EBENEZERCLONE copyDocumentLinks failed', [
-                'source_itemtype' => $source_itemtype,
-                'source_id'       => $source_id,
-                'target_itemtype' => $target_itemtype,
-                'target_id'       => $target_id,
-                'documents_id'    => (int) $row['documents_id'],
-            ]);
         }
 
         return $count;
@@ -1231,7 +1018,8 @@ JAVASCRIPT;
         $new_id,
         $old_id,
         int $copied_actors,
-        int $copied_items,
+        int $copied_related_ticket_links,
+        int $copied_related_items,
         int $copied_documents,
         int $followups_added,
         bool $link_created
@@ -1287,11 +1075,19 @@ JAVASCRIPT;
             );
         }
 
-        if ($copied_items > 0) {
+        if ($copied_related_ticket_links > 0) {
             self::logTimelineMessageIfEnabled(
                 self::TIMELINE_LOG_ITEMS_COPIED,
                 (int) $new_id,
-                sprintf(t_ebenezerclone('Copied %1$s linked item(s) from source ticket'), $copied_items)
+                sprintf(t_ebenezerclone('Copied %1$s related ticket link(s) from source ticket'), $copied_related_ticket_links)
+            );
+        }
+
+        if ($copied_related_items > 0) {
+            self::logTimelineMessageIfEnabled(
+                self::TIMELINE_LOG_ITEMS_COPIED,
+                (int) $new_id,
+                sprintf(t_ebenezerclone('Copied %1$s related item(s) from source ticket'), $copied_related_items)
             );
         }
 
@@ -1332,24 +1128,173 @@ JAVASCRIPT;
         );
     }
 
-    private static function formatErrorsForLog($errors): string
+    private static function getCloneFailureMessages($item): array
     {
-        if (!is_array($errors) || count($errors) === 0) {
-            return t_ebenezerclone('Unknown error');
+        $messages = [];
+
+        if (is_object($item) && method_exists($item, 'getErrors')) {
+            try {
+                $messages = array_merge($messages, self::flattenMessages($item->getErrors()));
+            } catch (\Throwable $e) {
+                // Some GLPI objects may expose getErrors() differently; keep the clone failure controlled.
+            }
         }
 
-        $flattened = [];
-        array_walk_recursive($errors, static function ($value) use (&$flattened) {
-            if ($value !== null && $value !== '') {
-                $flattened[] = (string) $value;
+        if (isset($_SESSION['MESSAGE_AFTER_REDIRECT'])) {
+            $session_messages = $_SESSION['MESSAGE_AFTER_REDIRECT'];
+            if (defined('ERROR') && is_array($session_messages) && isset($session_messages[ERROR])) {
+                $messages = array_merge($messages, self::flattenMessages($session_messages[ERROR]));
+            } else {
+                $messages = array_merge($messages, self::flattenMessages($session_messages));
             }
-        });
+        }
 
+        $messages = array_values(array_unique(self::flattenMessages($messages)));
+        if (count($messages) === 0) {
+            return [
+                t_ebenezerclone('Unknown error returned by GLPI. Check php-errors.log and sql-errors.log.'),
+            ];
+        }
+
+        return $messages;
+    }
+
+    private static function flattenMessages($messages): array
+    {
+        if ($messages === null || $messages === '') {
+            return [];
+        }
+
+        if (is_array($messages)) {
+            if (array_key_exists('message', $messages)) {
+                if (array_key_exists('type', $messages) && !self::isErrorMessageType($messages['type'])) {
+                    return [];
+                }
+                return self::flattenMessages($messages['message']);
+            }
+
+            $flattened = [];
+            foreach ($messages as $key => $value) {
+                if (is_string($key) && in_array($key, ['type', 'class', 'date', 'timestamp'], true)) {
+                    continue;
+                }
+                $flattened = array_merge($flattened, self::flattenMessages($value));
+            }
+            return $flattened;
+        }
+
+        if (is_object($messages) || is_resource($messages)) {
+            return [];
+        }
+
+        $message = trim(strip_tags((string) $messages));
+        if ($message === '') {
+            return [];
+        }
+
+        return [$message];
+    }
+
+    private static function isErrorMessageType($type): bool
+    {
+        if (defined('ERROR') && (string) $type === (string) ERROR) {
+            return true;
+        }
+
+        return strtolower((string) $type) === 'error';
+    }
+
+    private static function formatErrorsForLog($errors): string
+    {
+        $flattened = self::flattenMessages($errors);
         if (count($flattened) === 0) {
             return t_ebenezerclone('Unknown error');
         }
 
         return implode(' | ', array_unique($flattened));
+    }
+
+    private static function sanitizeCloneInputForLog(array $input, int $depth = 0): array
+    {
+        $safe = [];
+
+        foreach ($input as $key => $value) {
+            $field = (string) $key;
+
+            if (self::isSensitiveCloneLogField($field)) {
+                $safe[$field] = '[redacted]';
+                continue;
+            }
+
+            if (is_array($value)) {
+                if ($depth >= 2) {
+                    $safe[$field] = '[array:' . count($value) . ']';
+                    continue;
+                }
+
+                $safe[$field] = self::sanitizeCloneInputForLog($value, $depth + 1);
+                continue;
+            }
+
+            if (is_object($value)) {
+                $safe[$field] = '[object:' . get_class($value) . ']';
+                continue;
+            }
+
+            if (is_resource($value)) {
+                $safe[$field] = '[resource]';
+                continue;
+            }
+
+            if (is_string($value)) {
+                $plain = trim(strip_tags($value));
+                if ($plain !== $value || strlen($plain) > 120) {
+                    $safe[$field] = '[redacted]';
+                    continue;
+                }
+
+                $safe[$field] = $plain;
+                continue;
+            }
+
+            $safe[$field] = $value;
+        }
+
+        return $safe;
+    }
+
+    private static function isSensitiveCloneLogField(string $field): bool
+    {
+        $field = strtolower($field);
+        $sensitive_fields = [
+            'name',
+            'content',
+            '_content',
+            '_filename',
+            '_tag_filename',
+            '_prefix_filename',
+            '_files',
+            'files',
+            'filename',
+            'comment',
+            'comments',
+            'description',
+            'text',
+            'solution',
+            'anexos',
+        ];
+
+        if (in_array($field, $sensitive_fields, true)) {
+            return true;
+        }
+
+        foreach (['content', 'filename', 'comment', 'description', 'solution'] as $needle) {
+            if (strpos($field, $needle) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static function isFilledInputValue($value): bool
@@ -1367,6 +1312,19 @@ JAVASCRIPT;
         }
 
         return true;
+    }
+
+    private static function addClonedTitlePrefix(string $name): string
+    {
+        if ($name === '') {
+            return self::CLONED_TITLE_PREFIX;
+        }
+
+        if (strncmp($name, self::CLONED_TITLE_PREFIX, strlen(self::CLONED_TITLE_PREFIX)) === 0) {
+            return $name;
+        }
+
+        return self::CLONED_TITLE_PREFIX . ' ' . $name;
     }
 
     private static function buildTitleFromCategory(int $itilcategories_id, string $ticket_identifier = '', string $fallback = ''): string
@@ -1411,391 +1369,13 @@ JAVASCRIPT;
         return implode(' | ', $parts);
     }
 
-    public static function canEditAssignedActors(Ticket $ticket): bool
+    /**
+     * Visibility is controlled by plugin configuration (profile/entity/recursive),
+     * not by the legacy GLPI profile right of this class.
+     */
+    public static function canView()
     {
-        $permissions = self::getActorEditPermissions($ticket);
-        return !empty($permissions[self::ACTOR_ROLE_REQUESTER])
-            || !empty($permissions[self::ACTOR_ROLE_OBSERVER])
-            || !empty($permissions[self::ACTOR_ROLE_ASSIGN]);
-    }
-
-    public static function getActorEditPermissions(Ticket $ticket): array
-    {
-        if ($ticket->isNewItem()) {
-            return [
-                self::ACTOR_ROLE_REQUESTER => true,
-                self::ACTOR_ROLE_OBSERVER => true,
-                self::ACTOR_ROLE_ASSIGN => true,
-            ];
-        }
-
-        $status = (int) $ticket->getField('status');
-        if (in_array($status, $ticket->getClosedStatusArray(), true)) {
-            return [
-                self::ACTOR_ROLE_REQUESTER => false,
-                self::ACTOR_ROLE_OBSERVER => false,
-                self::ACTOR_ROLE_ASSIGN => false,
-            ];
-        }
-
-        // Global OFF: plugin does not interfere in actor fields.
-        if (!PluginEbenezercloneConfig::isGlobalActorFieldsBlocked()) {
-            return [
-                self::ACTOR_ROLE_REQUESTER => true,
-                self::ACTOR_ROLE_OBSERVER => true,
-                self::ACTOR_ROLE_ASSIGN => true,
-            ];
-        }
-
-        $entity_id = (int) $ticket->getField('entities_id');
-        return [
-            self::ACTOR_ROLE_REQUESTER => self::canEditActorRole($ticket, self::ACTOR_ROLE_REQUESTER, $entity_id),
-            self::ACTOR_ROLE_OBSERVER => self::canEditActorRole($ticket, self::ACTOR_ROLE_OBSERVER, $entity_id),
-            self::ACTOR_ROLE_ASSIGN => self::canEditActorRole($ticket, self::ACTOR_ROLE_ASSIGN, $entity_id),
-        ];
-    }
-
-    private static function canEditActorRole(Ticket $ticket, string $role, int $entity_id): bool
-    {
-        $permission_key = self::getPermissionKeyForActorRole($role);
-        if ($permission_key === '') {
-            return false;
-        }
-
-        $permission = PluginEbenezercloneConfig::hasProfilePermission(
-            $permission_key,
-            null,
-            $entity_id
-        );
-
-        // With global actor block enabled, profile matrix acts as explicit ALLOW.
-        return $permission === true;
-    }
-
-    private static function getPermissionKeyForActorRole(string $role): string
-    {
-        switch ($role) {
-            case self::ACTOR_ROLE_REQUESTER:
-                return PluginEbenezercloneConfig::PERMISSION_EDIT_REQUESTER;
-            case self::ACTOR_ROLE_OBSERVER:
-                return PluginEbenezercloneConfig::PERMISSION_EDIT_OBSERVER;
-            case self::ACTOR_ROLE_ASSIGN:
-                return PluginEbenezercloneConfig::PERMISSION_EDIT_ASSIGNED;
-        }
-
-        return '';
-    }
-
-    private static function coreAllowsActorRoleEdit(Ticket $ticket, string $role): bool
-    {
-        switch ($role) {
-            case self::ACTOR_ROLE_ASSIGN:
-                return $ticket->canAssign();
-            case self::ACTOR_ROLE_REQUESTER:
-            case self::ACTOR_ROLE_OBSERVER:
-                return $ticket->canUpdateItem();
-        }
-
-        return false;
-    }
-
-    public static function shouldLockPropertiesByPlugin(Ticket $ticket): bool
-    {
-        return count(self::getLockedPropertyFieldsByPlugin($ticket)) > 0;
-    }
-
-    public static function getLockedPropertyFieldsForCurrentUser(Ticket $ticket): array
-    {
-        return self::getLockedPropertyFieldsByPlugin($ticket);
-    }
-
-    public static function guardAssignedActorsUpdate(Ticket $ticket): bool
-    {
-        if ($ticket->isNewItem()) {
-            return true;
-        }
-
-        $has_properties_mutation = self::hasLockedPropertiesMutation($ticket->input ?? []);
-        $has_actor_mutation      = self::hasActorMutation($ticket->input ?? []);
-
-        if (!$has_properties_mutation && !$has_actor_mutation) {
-            return true;
-        }
-
-        if ($has_properties_mutation && self::shouldLockPropertiesByPlugin($ticket)) {
-            self::stripLockedPropertiesMutation($ticket->input, $ticket);
-        }
-
-        if (!$has_actor_mutation) {
-            return true;
-        }
-
-        $blocked_actor_roles = self::getBlockedActorRolesForMutation($ticket, $ticket->input ?? []);
-        if (!count($blocked_actor_roles)) {
-            return true;
-        }
-
-        self::stripActorMutation($ticket->input, $blocked_actor_roles);
-        self::logPermissionConflict(
-            'actor_update_blocked_by_plugin',
-            $ticket,
-            $ticket->input ?? [],
-            ['blocked_actor_roles' => array_values($blocked_actor_roles)]
-        );
-        Session::addMessageAfterRedirect(
-            t_ebenezerclone('You do not have permission to edit actor fields for this ticket.'),
-            false,
-            ERROR
-        );
         return true;
-    }
-
-    private static function getBlockedActorRolesForMutation(Ticket $ticket, array $input): array
-    {
-        if ($ticket->isNewItem()) {
-            return [];
-        }
-
-        $status = (int) $ticket->getField('status');
-        if (in_array($status, $ticket->getClosedStatusArray(), true)) {
-            return [
-                self::ACTOR_ROLE_REQUESTER,
-                self::ACTOR_ROLE_OBSERVER,
-                self::ACTOR_ROLE_ASSIGN,
-            ];
-        }
-
-        // Global OFF: plugin does not interfere in actor fields.
-        if (!PluginEbenezercloneConfig::isGlobalActorFieldsBlocked()) {
-            return [];
-        }
-
-        $actor_roles = self::getActorMutationRoles($input);
-        if (!count($actor_roles)) {
-            return [];
-        }
-
-        $permissions = self::getActorEditPermissions($ticket);
-        $blocked = [];
-        foreach ($actor_roles as $role) {
-            if (empty($permissions[$role])) {
-                $blocked[] = $role;
-            }
-        }
-
-        return $blocked;
-    }
-
-    private static function hasLockedPropertiesMutation(array $input): bool
-    {
-        foreach (self::LOCKED_PROPERTY_FIELDS_AFTER_OPEN as $field) {
-            if (array_key_exists($field, $input)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static function stripLockedPropertiesMutation(array &$input, Ticket $ticket): void
-    {
-        $policy_blocked_fields = self::getPolicyBlockedPropertyFieldsByPlugin($ticket);
-        $core_allowed_fields = self::getCoreSpecificAllowedPropertyFields($ticket);
-        $core_override_fields = array_values(array_intersect(
-            $policy_blocked_fields,
-            $core_allowed_fields,
-            array_keys($input)
-        ));
-
-        if (count($core_override_fields)) {
-            self::logPermissionConflict(
-                'properties_update_allowed_by_core',
-                $ticket,
-                $input,
-                ['core_override_fields' => $core_override_fields]
-            );
-        }
-
-        $locked_fields = array_values(array_diff($policy_blocked_fields, $core_allowed_fields));
-        $blocked_input_fields = array_values(array_intersect($locked_fields, array_keys($input)));
-        if (count($blocked_input_fields)) {
-            self::logPermissionConflict(
-                'properties_update_blocked_by_plugin',
-                $ticket,
-                $input,
-                ['blocked_fields' => $blocked_input_fields]
-            );
-        }
-
-        foreach ($locked_fields as $field) {
-            unset($input[$field]);
-        }
-    }
-
-    private static function getLockedPropertyFieldsByPlugin(Ticket $ticket): array
-    {
-        $policy_blocked_fields = self::getPolicyBlockedPropertyFieldsByPlugin($ticket);
-        if (!count($policy_blocked_fields)) {
-            return [];
-        }
-
-        $core_allowed_fields = self::getCoreSpecificAllowedPropertyFields($ticket);
-        if (!count($core_allowed_fields)) {
-            return $policy_blocked_fields;
-        }
-
-        return array_values(array_diff($policy_blocked_fields, $core_allowed_fields));
-    }
-
-    private static function getPolicyBlockedPropertyFieldsByPlugin(Ticket $ticket): array
-    {
-        if ($ticket->isNewItem()) {
-            return [];
-        }
-
-        $final_statuses = array_merge(
-            $ticket->getSolvedStatusArray(),
-            $ticket->getClosedStatusArray()
-        );
-        if (in_array((int) $ticket->getField('status'), $final_statuses, true)) {
-            return [];
-        }
-
-        $entity_id = (int) $ticket->getField('entities_id');
-        $locked_fields = [];
-        foreach (self::LOCKED_PROPERTY_FIELDS_AFTER_OPEN as $field) {
-            $policy = PluginEbenezercloneConfig::getResolvedTicketPropertyPolicy($field, null, $entity_id);
-            if ($policy === PluginEbenezercloneConfig::PROPERTY_POLICY_BLOCK) {
-                $locked_fields[] = $field;
-            }
-        }
-
-        if (!count($locked_fields)) {
-            return [];
-        }
-
-        return array_values(array_unique($locked_fields));
-    }
-
-    private static function getCoreSpecificAllowedPropertyFields(Ticket $ticket): array
-    {
-        $allowed = [];
-
-        // Preserve native GLPI status transition triggered by assignment flow.
-        if (!empty($ticket->input['_from_assignment'])) {
-            $allowed[] = 'status';
-        }
-
-        // Optional plugin global rule: keep category editable when currently empty.
-        if (
-            PluginEbenezercloneConfig::isEmptyCategoryEditionAllowed()
-            && (int) $ticket->getField('itilcategories_id') <= 0
-        ) {
-            $allowed[] = 'itilcategories_id';
-        }
-
-        // Minimal hardcoded precedence for critical native/core rules.
-        // 1) Requester update window (native rule) can allow category update.
-        if (method_exists($ticket, 'canRequesterUpdateItem') && $ticket->canRequesterUpdateItem()) {
-            $allowed[] = 'itilcategories_id';
-        }
-
-        // 2) Core specific right for priority changes.
-        if (Session::haveRight(Ticket::$rightname, Ticket::CHANGEPRIORITY)) {
-            $allowed[] = 'priority';
-        }
-
-        return array_values(array_unique($allowed));
-    }
-
-    private static function hasActorMutation(array $input): bool
-    {
-        return count(self::getActorMutationRoles($input)) > 0;
-    }
-
-    private static function getActorMutationRoles(array $input): array
-    {
-        $roles = [];
-        $addRole = static function (string $role) use (&$roles): void {
-            if (!in_array($role, $roles, true)) {
-                $roles[] = $role;
-            }
-        };
-
-        $legacy_keys = [
-            self::ACTOR_ROLE_REQUESTER => ['_itil_requester', '_users_id_requester', '_groups_id_requester', '_suppliers_id_requester'],
-            self::ACTOR_ROLE_OBSERVER  => ['_itil_observer', '_users_id_observer', '_groups_id_observer', '_suppliers_id_observer'],
-            self::ACTOR_ROLE_ASSIGN    => ['_itil_assign', '_users_id_assign', '_groups_id_assign', '_suppliers_id_assign'],
-        ];
-        foreach ($legacy_keys as $role => $keys) {
-            foreach ($keys as $key) {
-                if (array_key_exists($key, $input)) {
-                    $addRole($role);
-                    break;
-                }
-            }
-        }
-
-        if (isset($input['_actors']) && is_array($input['_actors'])) {
-            foreach ([self::ACTOR_ROLE_REQUESTER, self::ACTOR_ROLE_OBSERVER, self::ACTOR_ROLE_ASSIGN] as $role) {
-                if (array_key_exists($role, $input['_actors'])) {
-                    $addRole($role);
-                }
-            }
-        }
-
-        if (isset($input['actortype'])) {
-            $actor_type = (string) $input['actortype'];
-            if ($actor_type === (string) CommonITILActor::REQUESTER) {
-                $addRole(self::ACTOR_ROLE_REQUESTER);
-            } elseif ($actor_type === (string) CommonITILActor::OBSERVER) {
-                $addRole(self::ACTOR_ROLE_OBSERVER);
-            } elseif ($actor_type === (string) CommonITILActor::ASSIGN) {
-                $addRole(self::ACTOR_ROLE_ASSIGN);
-            }
-        }
-
-        return $roles;
-    }
-
-    private static function stripActorMutation(array &$input, array $blocked_roles): void
-    {
-        $blocked_roles = array_values(array_unique(array_map('strval', $blocked_roles)));
-        if (!count($blocked_roles)) {
-            return;
-        }
-
-        $legacy_keys = [
-            self::ACTOR_ROLE_REQUESTER => ['_itil_requester', '_users_id_requester', '_groups_id_requester', '_suppliers_id_requester', '_users_id_requester_notif'],
-            self::ACTOR_ROLE_OBSERVER  => ['_itil_observer', '_users_id_observer', '_groups_id_observer', '_suppliers_id_observer', '_users_id_observer_notif'],
-            self::ACTOR_ROLE_ASSIGN    => ['_itil_assign', '_users_id_assign', '_groups_id_assign', '_suppliers_id_assign'],
-        ];
-        foreach ($blocked_roles as $role) {
-            foreach (($legacy_keys[$role] ?? []) as $key) {
-                unset($input[$key]);
-            }
-        }
-
-        if (isset($input['_actors']) && is_array($input['_actors'])) {
-            foreach ($blocked_roles as $role) {
-                unset($input['_actors'][$role]);
-            }
-            if (!count($input['_actors'])) {
-                unset($input['_actors']);
-            }
-        }
-
-        if (isset($input['actortype'])) {
-            $actortype = (string) $input['actortype'];
-            $is_blocked_actortype = (
-                ($actortype === (string) CommonITILActor::REQUESTER && in_array(self::ACTOR_ROLE_REQUESTER, $blocked_roles, true))
-                || ($actortype === (string) CommonITILActor::OBSERVER && in_array(self::ACTOR_ROLE_OBSERVER, $blocked_roles, true))
-                || ($actortype === (string) CommonITILActor::ASSIGN && in_array(self::ACTOR_ROLE_ASSIGN, $blocked_roles, true))
-            );
-            if ($is_blocked_actortype) {
-                unset($input['actortype'], $input['groups_id'], $input['users_id'], $input['suppliers_id'], $input['itemtype'], $input['items_id']);
-            }
-        }
     }
 
     private static function getEffectiveFieldModesForCurrentProfile(?int $entity_id = null): array
@@ -1803,31 +1383,13 @@ JAVASCRIPT;
         return PluginEbenezercloneConfig::getFieldModes();
     }
 
-    private static function coreAllowsTicketUpdate(Ticket $ticket): bool
-    {
-        return $ticket->can($ticket->getID(), UPDATE);
-    }
-
-    private static function logPermissionConflict(string $event, Ticket $ticket, array $input = [], array $extra_context = []): void
-    {
-        $context = [
-            'event'       => $event,
-            'ticket_id'   => (int) $ticket->getID(),
-            'entity_id'   => (int) $ticket->getField('entities_id'),
-            'profile_id'  => (int) ($_SESSION['glpiactiveprofile']['id'] ?? 0),
-            'input_keys'  => array_keys($input),
-        ];
-        if (count($extra_context)) {
-            $context = array_merge($context, $extra_context);
-        }
-
-        Toolbox::logDebug(
-            'EBENEZERCLONE permission conflict',
-            $context
-        );
-    }
-
-    private static function validatePostCloneConsistency(Ticket $source_ticket, int $new_ticket_id, int $expected_category_id): void
+    private static function validatePostCloneConsistency(
+        Ticket $source_ticket,
+        int $new_ticket_id,
+        string $expected_name,
+        int $expected_type,
+        int $expected_category_id
+    ): void
     {
         $new_ticket = new Ticket();
         if (!$new_ticket->getFromDB($new_ticket_id)) {
@@ -1847,6 +1409,33 @@ JAVASCRIPT;
                 'source_ticket_id' => (int) $source_ticket->getID(),
                 'expected_category_id' => $expected_category_id,
                 'actual_category_id' => $actual_category_id,
+            ]);
+        }
+
+        $actual_type = (int) $new_ticket->getField('type');
+        if ($expected_type > 0 && $actual_type !== $expected_type) {
+            Toolbox::logDebug('EBENEZERCLONE post-clone validation failed', [
+                'reason' => 'type_mismatch',
+                'clone_ticket_id' => $new_ticket_id,
+                'source_ticket_id' => (int) $source_ticket->getID(),
+                'expected_type' => $expected_type,
+                'actual_type' => $actual_type,
+                'expected_category_id' => $expected_category_id,
+                'actual_category_id' => $actual_category_id,
+            ]);
+        }
+
+        $actual_name = trim((string) $new_ticket->getField('name'));
+        $expected_name = trim($expected_name);
+        if ($expected_name !== '' && $actual_name !== $expected_name) {
+            Toolbox::logDebug('EBENEZERCLONE post-clone validation failed', [
+                'reason' => 'name_mismatch',
+                'clone_ticket_id' => $new_ticket_id,
+                'source_ticket_id' => (int) $source_ticket->getID(),
+                'expected_name' => $expected_name,
+                'actual_name' => $actual_name,
+                'expected_type' => $expected_type,
+                'actual_type' => $actual_type,
             ]);
         }
 

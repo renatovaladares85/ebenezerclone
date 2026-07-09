@@ -32,9 +32,32 @@ function plugin_ebenezerclone_uninstall()
 
 function plugin_ebenezerclone_pre_item_update($item)
 {
-    if ($item instanceof Ticket) {
-        return PluginEbenezercloneClone::guardAssignedActorsUpdate($item);
+    return true;
+}
+
+function plugin_ebenezerclone_is_super_admin_profile()
+{
+    return isset($_SESSION['glpiactiveprofile']['name'])
+        && $_SESSION['glpiactiveprofile']['name'] === 'Super-Admin';
+}
+
+function plugin_ebenezerclone_pre_item_add_ticket($item)
+{
+    if (!($item instanceof Ticket)) {
+        return true;
     }
 
-    return true;
+    if (
+        plugin_ebenezerclone_is_super_admin_profile()
+        || !is_array($item->input)
+        || empty($item->input)
+        || empty($item->input['clone'])
+    ) {
+        return true;
+    }
+
+    $item->input = false;
+    Session::addMessageAfterRedirect(__('You do not have permission to perform this action.'), false, ERROR);
+
+    return false;
 }

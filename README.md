@@ -23,7 +23,7 @@ Plugin para GLPI 10.0.x que adiciona uma aba para clonar chamados com rastreabil
 
 ## Requisitos
 
-- GLPI `>= 10.0.0` e `< 10.1.0`
+- GLPI `10.0.x` (`>= 10.0.0` e `< 10.0.99` na metadata do plugin)
 - Plugin em `plugins/ebenezerclone`
 - Permissões de ticket no perfil e direito do plugin habilitado
 
@@ -160,7 +160,7 @@ Observação importante:
 
 ## Limitações e pontos de atenção
 
-- Compatível com GLPI `10.0.x` (`>= 10.0.0` e `< 10.1.0`).
+- Compatível com GLPI `10.0.x` (`>= 10.0.0` e `< 10.0.99` na metadata do plugin).
 - Fuso/horário do servidor impactam data/hora inicial do clone.
 - Reabra a sessão após ajustes de perfil/direitos para refletir permissões.
 
