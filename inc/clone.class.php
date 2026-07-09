@@ -1,6 +1,7 @@
 <?php
 
 use Glpi\Event;
+use Glpi\Toolbox\Sanitizer;
 
 if (!defined('GLPI_ROOT')) {
     die('Sorry. You cannot access directly to this file');
@@ -559,7 +560,7 @@ JAVASCRIPT;
 
         $name = (string) ($resolved['name'] ?? $ticket->getField('name'));
         $original_content = (string) $ticket->getField('content');
-        $content = $original_content;
+        $content = self::normalizeTicketContentForClone($original_content);
         $type = (int) ($resolved['type'] ?? $ticket->getField('type'));
         $itilcategories_id = (int) ($resolved['category'] ?? $ticket->getField('itilcategories_id'));
         $entities_id = (int) $ticket->getField('entities_id');
@@ -600,10 +601,6 @@ JAVASCRIPT;
         }
 
         $new = new Ticket();
-        if ($content === '') {
-            $content = $original_content;
-        }
-
         $new_input = [];
         foreach (PluginEbenezercloneConfig::getCloneCopyTicketFieldKeys() as $field_key) {
             if (!PluginEbenezercloneConfig::shouldCopyCloneElement($field_key)) {
@@ -701,7 +698,7 @@ JAVASCRIPT;
         }
 
         if ($new->getFromDB($new_id)) {
-            $new->fields['content'] = $original_content;
+            $new->fields['content'] = $content;
             if (!$new->updateInDB(['content'], [])) {
                 Toolbox::logDebug(
                     'EBENEZERCLONE cloneTicket content preservation failed',
@@ -766,6 +763,12 @@ JAVASCRIPT;
         );
 
         return $new_id;
+    }
+
+    private static function normalizeTicketContentForClone(string $content): string
+    {
+        // Match the sanitized format expected by Ticket::add() in GLPI 10.0.20 without manual SQL escaping.
+        return Sanitizer::sanitize(Sanitizer::unsanitize($content));
     }
 
     private static function addCloneFollowups($new_id, $old_id)
