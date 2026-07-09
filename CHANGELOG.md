@@ -15,10 +15,14 @@ Regra de rastreio por commit (obrigatória):
 ### Patch release
 - Ajusta a metadata de compatibilidade GLPI para a linha `10.0.x` usando `requirements['glpi']` como fonte principal, sem `minGlpiVersion` legado.
 - Corrige o tratamento de falha em `Ticket::add()` para não chamar `Ticket::getErrors()` diretamente no GLPI 10.0.20.
+- Normaliza o `content` clonado pelo helper oficial `Glpi\Toolbox\Sanitizer` antes de `Ticket::add()`, preservando aspas simples, apostrofos e HTML esperado.
 - Mantém a correção restrita à observabilidade e ao erro controlado de clonagem, sem alterar regras de negócio ou campos copiados.
+- Alinha a rastreabilidade operacional da versão `3.1.25` e formaliza a política de bump SemVer por commit.
 
 ### Ledger de commits da versão (100% rastreável)
-- `3.1.25+git.<pending>` - fix clone add failure handling and GLPI 10.0 metadata
+- `3.1.25+git.82e9937` - fix clone add failure handling and GLPI 10.0 metadata
+- `3.1.25+git.3f889fd` - normalize cloned ticket content before Ticket::add to preserve quotes and HTML
+- `3.1.25+git.<pending>` - align 3.1.25 traceability and local versioning rules
 
 ## [3.1.24] - 2026-06-02
 
