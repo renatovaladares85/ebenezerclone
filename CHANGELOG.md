@@ -10,15 +10,24 @@ Regra de rastreio por commit (obrigatória):
   - `VERSAO_EFETIVA = <semver_release>+git.<short_sha>`
   - Exemplo: `1.0.1+git.6848b3f2`
 
+## [3.1.27] - 2026-07-09
+
+### Patch release
+- Remove do `README.md` a referencia aos guias locais GLPI nao versionados.
+- Mantem o apontamento desses guias exclusivamente no `AGENTS.md`, como regra operacional para o Codex.
+
+### Ledger de commits da versão (100% rastreável)
+- `3.1.27+git.<pending>` - keep local GLPI standards references only in AGENTS
+
 ## [3.1.26] - 2026-07-09
 
 ### Patch release
 - Adiciona referencias locais nao versionadas para Codex consultar padroes de desenvolvimento GLPI e plugins GLPI.
-- Referencia os guias locais no `README.md` e protege os MDs gerados via `.gitignore`.
+- Protege os MDs gerados via `.gitignore`.
 - Formaliza no `AGENTS.md` o uso desses guias antes de alteracoes dependentes de padrao GLPI.
 
 ### Ledger de commits da versão (100% rastreável)
-- `3.1.26+git.<pending>` - add local GLPI standards references for Codex
+- `3.1.26+git.0777f45` - add local GLPI standards references for Codex
 
 ## [3.1.25] - 2026-07-09
 

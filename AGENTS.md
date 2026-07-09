@@ -13,5 +13,8 @@
 ## Referencias GLPI Locais
 
 - Antes de implementar ou revisar comportamento dependente de padrao GLPI, consulte os MDs locais em `docs/local-glpi-standards/` quando existirem.
+- Referencias esperadas:
+  - `docs/local-glpi-standards/glpi-developer-standards.md`
+  - `docs/local-glpi-standards/glpi-plugin-standards.md`
 - Esses MDs sao gerados a partir dos PDFs oficiais locais de desenvolvimento GLPI e plugins GLPI.
 - Os MDs sao artefatos locais para apoio do Codex e nao devem ser versionados.

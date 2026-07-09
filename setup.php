@@ -2,7 +2,7 @@
 
 use Glpi\Plugin\Hooks;
 
-define('PLUGIN_EBENEZERCLONE_VERSION', '3.1.26');
+define('PLUGIN_EBENEZERCLONE_VERSION', '3.1.27');
 
 // Minimal GLPI version, inclusive
 define('PLUGIN_EBENEZERCLONE_MIN_GLPI_VERSION', '10.0.0');

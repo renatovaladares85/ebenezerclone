@@ -2,7 +2,7 @@
 
 Plugin para GLPI 10.0.x que adiciona uma aba para clonar chamados com rastreabilidade entre ticket de origem e ticket novo.
 
-- Versão: 3.1.26
+- Versão: 3.1.27
 - Autor: Renato Valadares
 - Licença: GPL v2+
 
@@ -11,9 +11,6 @@ Plugin para GLPI 10.0.x que adiciona uma aba para clonar chamados com rastreabil
 - Changelog: `plugins/ebenezerclone/CHANGELOG.md`
 - Matriz de rastreio (DRE/commits/PRs/tags): `plugins/ebenezerclone/TRACEABILITY.md`
 - Regra de representação por commit: `<release_semver>+git.<short_sha>`
-- Referencias GLPI locais para Codex, nao versionadas:
-  - `plugins/ebenezerclone/docs/local-glpi-standards/glpi-developer-standards.md`
-  - `plugins/ebenezerclone/docs/local-glpi-standards/glpi-plugin-standards.md`
 
 ## O que o plugin faz
 

@@ -20,9 +20,9 @@ cada commit no versionamento:
 4. Quando houver nova release (novo SemVer), iniciar novo bloco de ledger.
 
 Exemplo:
-- Release no `setup.php`: `3.1.26`
+- Release no `setup.php`: `3.1.27`
 - Commit: `6848b3f2`
-- Versão efetiva rastreável: `3.1.26+git.<short_sha>`
+- Versão efetiva rastreável: `3.1.27+git.<short_sha>`
 
 ## DRE principal
 - `2601300202` - Clonagem de chamados
@@ -99,9 +99,16 @@ Criterio: documentacao operacional local para orientar Codex em padroes GLPI sem
 
 Arvore logica de entrega:
 - Referencias locais GLPI
-  - `HEAD` (MDs locais gerados a partir de PDFs oficiais e ignorados pelo Git)
+  - `0777f45` (MDs locais gerados a partir de PDFs oficiais e ignorados pelo Git)
 - Governanca de uso
-  - `HEAD` (README e AGENTS apontam para os guias locais)
+  - `0777f45` (AGENTS aponta para os guias locais)
+
+### 3.1.27 (patch release)
+Criterio: ajuste de governanca para manter referencias locais GLPI apenas nas instrucoes do agente.
+
+Arvore logica de entrega:
+- Governanca de uso
+  - `HEAD` (remove referencia dos guias locais do README e mantem apontamento no AGENTS)
 ## Matriz de rastreio
 
 | Item | Identificador |
@@ -111,7 +118,7 @@ Arvore logica de entrega:
 | PRs relacionados | `#10`, `#11`, `#12` |
 | Merges relevantes em `main` | `3d0af347`, `085b0e4a`, `354035a9` |
 | Tags HML relacionadas | `v10.0.20-hml-003`, `v10.0.20-hml-004`, `v10.0.20-hml-005` |
-| Versão atual do plugin | `3.1.26` |
+| Versão atual do plugin | `3.1.27` |
 | Regra de build por commit | `<release>+git.<short_sha>` |
 
 ## Regra operacional para próximos commits
