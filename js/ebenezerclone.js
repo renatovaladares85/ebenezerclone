@@ -25,26 +25,6 @@
         return itemtype === 'ticket';
     };
 
-    var ensureLinkedTicketsBadge = function (totalLinks) {
-        var $header = $('#linked_tickets-heading');
-        if (!$header.length || totalLinks <= 0) {
-            return;
-        }
-
-        var $badge = $header.find('.badge.bg-secondary').first();
-        if (!$badge.length) {
-            var $title = $header.find('.item-title').first();
-            if ($title.length) {
-                $badge = $('<span class="badge bg-secondary ms-2"></span>');
-                $title.after($badge);
-            }
-        }
-
-        if ($badge.length) {
-            $badge.text(String(totalLinks));
-        }
-    };
-
     var ensureLinkedTicketsList = function () {
         var $root = $('#linked_tickets .accordion-body').first();
         if (!$root.length) {
@@ -85,16 +65,12 @@
 
             var linkLabel = item.link_label || '';
             var title = item.title || ('Ticket #' + item.tickets_id);
-            var href = item.url || '#';
-
             var html = ''
                 + '<div class="list-group-item" data-ebz-relation-id="' + item.relation_id + '">'
                 + '  <div class="row">'
                 + '    <div class="col-auto">' + $('<div/>').text(linkLabel).html() + '</div>'
                 + '    <div class="col text-truncate">'
-                + '      <a href="' + $('<div/>').text(href).html() + '" class="col-9 overflow-hidden text-nowrap">'
-                + '        <span>' + $('<div/>').text(title).html() + '</span>'
-                + '      </a>'
+                + '      <span class="col-9 overflow-hidden text-nowrap">' + $('<div/>').text(title).html() + '</span>'
                 + '    </div>'
                 + '  </div>'
                 + '</div>';
@@ -122,7 +98,6 @@
                 }
 
                 appendMissingLinkedTickets(data.items || []);
-                ensureLinkedTicketsBadge(parseInt(data.total_links || 0, 10));
             });
     };
 

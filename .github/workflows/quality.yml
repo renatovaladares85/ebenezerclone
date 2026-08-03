@@ -1,0 +1,46 @@
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+      - name: Install validation tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gettext zip ripgrep
+      - name: Validate required commands
+        run: |
+          set -euo pipefail
+          command -v rg
+          command -v msgfmt
+          command -v zip
+      - name: PHP lint and i18n
+        run: bash scripts/validate_i18n_and_php.sh
+      - name: Validate shell scripts
+        run: |
+          set -euo pipefail
+          bash -n scripts/validate_i18n_and_php.sh
+          bash -n scripts/package_release.sh
+          bash -n scripts/read_plugin_version.sh
+          bash -n scripts/check_forbidden_references.sh
+      - name: Check forbidden client references
+        run: bash scripts/check_forbidden_references.sh
+      - name: Package dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(bash scripts/read_plugin_version.sh setup.php)"
+          bash scripts/package_release.sh --tag "v${version}" --dry-run

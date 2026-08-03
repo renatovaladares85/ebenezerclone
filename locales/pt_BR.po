@@ -355,6 +355,30 @@ msgstr "Recalcular título a partir da categoria selecionada"
 msgid "Checked: title is always recalculated from selected category in clone form. Unchecked: title always keeps source ticket title."
 msgstr "Marcado: o título é sempre recalculado a partir da categoria selecionada no formulário de clonagem. Desmarcado: o título sempre mantém o título do chamado de origem."
 
+msgid "Show related tickets hidden by native visibility"
+msgstr "Exibir chamados relacionados ocultados pela visibilidade nativa"
+
+msgid "Checked: shows related tickets hidden by the native interface. This can broaden visibility of relationship metadata and must be enabled only after confidentiality review."
+msgstr "Marcado: exibe chamados relacionados ocultados pela interface nativa. Isso pode ampliar a visibilidade de metadados de relacionamento e só deve ser habilitado após análise de confidencialidade."
+
+msgid "Require native GLPI Ticket create permission"
+msgstr "Exigir permissão nativa do GLPI para criar chamado"
+
+msgid "Checked: cloning also requires the native GLPI Ticket create right in the final entity. Unchecked: the plugin authorization still applies, but disabling this requirement increases security risk."
+msgstr "Marcado: a clonagem também exige o direito nativo do GLPI para criar chamado na entidade final. Desmarcado: a autorização do plugin continua sendo aplicada, mas desabilitar esta exigência aumenta o risco de segurança."
+
+msgid "Selected category is not available."
+msgstr "A categoria selecionada não está disponível."
+
+msgid "Clone failed for this ticket."
+msgstr "A clonagem falhou para este chamado."
+
+msgid "Failed to clone the ticket."
+msgstr "Falha ao clonar o chamado."
+
+msgid "Related item link copied during clone."
+msgstr "Vínculo de item relacionado copiado durante a clonagem."
+
 msgid "Global clone copy policy"
 msgstr "Política global de cópia da clonagem"
 

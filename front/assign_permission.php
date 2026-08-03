@@ -7,41 +7,32 @@ header('Content-Type: application/json; charset=UTF-8');
 
 $tickets_id = (int) ($_GET['tickets_id'] ?? 0);
 if ($tickets_id <= 0) {
+    http_response_code(400);
     echo json_encode([
         'ok' => false,
-        'can_edit' => false,
-        'actor_permissions' => [
-            'requester' => false,
-            'observer' => false,
-            'assign' => false,
-        ],
-        'should_lock_properties' => false,
-        'property_lock_fields' => [],
-        'can_use_ticket_clone_action' => PluginEbenezercloneClone::canUseTicketCloneActionInCurrentProfile(),
-        'can_use_massive_clone' => PluginEbenezercloneClone::canUseMassiveCloneActionInCurrentProfile(),
+        'error' => 'invalid_request',
     ]);
     exit;
 }
 
 $ticket = new Ticket();
 if (!$ticket->getFromDB($tickets_id)) {
+    http_response_code(404);
     echo json_encode([
         'ok' => false,
-        'can_edit' => false,
-        'actor_permissions' => [
-            'requester' => false,
-            'observer' => false,
-            'assign' => false,
-        ],
-        'should_lock_properties' => false,
-        'property_lock_fields' => [],
-        'can_use_ticket_clone_action' => PluginEbenezercloneClone::canUseTicketCloneActionInCurrentProfile(),
-        'can_use_massive_clone' => PluginEbenezercloneClone::canUseMassiveCloneActionInCurrentProfile(),
+        'error' => 'not_found',
     ]);
     exit;
 }
 
-$ticket->check($tickets_id, READ);
+if (!$ticket->can($tickets_id, READ)) {
+    http_response_code(404);
+    echo json_encode([
+        'ok' => false,
+        'error' => 'not_found',
+    ]);
+    exit;
+}
 $actor_permissions = PluginEbenezercloneClone::getActorEditPermissions($ticket);
 $can_edit = !empty($actor_permissions['requester'])
     || !empty($actor_permissions['observer'])

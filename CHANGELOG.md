@@ -10,6 +10,20 @@ Regra de rastreio por commit (obrigatória):
   - `VERSAO_EFETIVA = <semver_release>+git.<short_sha>`
   - Exemplo: `1.0.1+git.6848b3f2`
 
+## [3.1.28] - 2026-08-03
+
+### Patch release
+- Restringe a compatibilidade declarada a GLPI `>= 10.0.20` e `< 11.0.0`.
+- Adiciona configurações globais independentes para exibição adicional de relacionados e exigência do direito nativo de criação de Ticket.
+- Preserva o comportamento efetivo de upgrades: exibição adicional ligada e direito nativo dispensado quando as novas chaves ainda não existirem.
+- Exige POST, CSRF, leitura da origem, categoria visível/compatível, entidade final acessível e, quando configurado, criação nativa no backend.
+- Reduz exposição do endpoint de relacionados e remove dependência do perfil `Super-Admin`.
+- Minimiza logs e mensagens de falha, sem conteúdo livre, títulos ou detalhes internos.
+
+### Ledger de commits da versão (100% rastreável)
+- `3.1.28+git.<pending>` - harden clone ACL, CSRF, LGPD logging and GLPI 10 metadata
+- `3.1.28+git.<pending>` - make CI validation dependencies and package version parsing explicit
+
 ## [3.1.27] - 2026-07-09
 
 ### Patch release

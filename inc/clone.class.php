@@ -526,7 +526,10 @@ JAVASCRIPT;
             Session::addMessageAfterRedirect(__('Item not found.'), false, ERROR);
             return null;
         }
-        $ticket->check($ticket->getID(), READ);
+        if (!$ticket->can($ticket->getID(), READ)) {
+            Session::addMessageAfterRedirect(__('You do not have permission to perform this action.'), false, ERROR);
+            return null;
+        }
 
         if (!self::canCloneTicketInCurrentProfile((int) $ticket->getField('entities_id'))) {
             Session::addMessageAfterRedirect(__('You do not have permission to perform this action.'), false, ERROR);
@@ -584,14 +587,32 @@ JAVASCRIPT;
 
         $name = self::addClonedTitlePrefix($name);
 
-        if ($itilcategories_id > 0) {
-            $target_category = new ITILCategory();
-            if ($target_category->getFromDB($itilcategories_id)) {
-                $target_entity = (int) $target_category->getField('entities_id');
-                if ($target_entity > 0) {
-                    $entities_id = $target_entity;
-                }
-            }
+        $target_category = new ITILCategory();
+        if (!$target_category->getFromDB($itilcategories_id) || !$target_category->can($itilcategories_id, READ)) {
+            Session::addMessageAfterRedirect(t_ebenezerclone('Selected category is not available.'), false, ERROR);
+            return null;
+        }
+
+        if (
+            ($type === Ticket::INCIDENT_TYPE && empty($target_category->fields['is_incident']))
+            || ($type === Ticket::DEMAND_TYPE && empty($target_category->fields['is_request']))
+        ) {
+            Session::addMessageAfterRedirect(t_ebenezerclone('Selected category is not available.'), false, ERROR);
+            return null;
+        }
+
+        if (!in_array($type, [Ticket::INCIDENT_TYPE, Ticket::DEMAND_TYPE], true)) {
+            Session::addMessageAfterRedirect(t_ebenezerclone('Type is mandatory.'), false, ERROR);
+            return null;
+        }
+
+        $target_entity = (int) $target_category->getField('entities_id');
+        if ($target_entity > 0) {
+            $entities_id = $target_entity;
+        }
+        if (!Session::haveAccessToEntity($entities_id)) {
+            Session::addMessageAfterRedirect(__('You do not have permission to perform this action.'), false, ERROR);
+            return null;
         }
 
         $template = $ticket->getITILTemplateToUse(0, $type, $itilcategories_id, $entities_id);
@@ -601,6 +622,14 @@ JAVASCRIPT;
         }
 
         $new = new Ticket();
+        $new->fields['entities_id'] = $entities_id;
+        if (
+            PluginEbenezercloneConfig::shouldRequireGlpiTicketCreatePermission()
+            && !$new->canCreateItem()
+        ) {
+            Session::addMessageAfterRedirect(__('You do not have permission to perform this action.'), false, ERROR);
+            return null;
+        }
         $new_input = [];
         foreach (PluginEbenezercloneConfig::getCloneCopyTicketFieldKeys() as $field_key) {
             if (!PluginEbenezercloneConfig::shouldCopyCloneElement($field_key)) {
@@ -660,37 +689,24 @@ JAVASCRIPT;
 
         $new_id = $new->add($new_input);
         if (!$new_id) {
-            $failure_messages = self::getCloneFailureMessages($new);
-            $failure_summary = self::formatErrorsForLog($failure_messages);
-
             Toolbox::logDebug(
                 'EBENEZERCLONE cloneTicket failed',
                 [
+                    'event_code'         => 'ticket_add_failed',
+                    'plugin_version'      => PLUGIN_EBENEZERCLONE_VERSION,
                     'source_ticket_id'   => (int) $ticket->getID(),
-                    'source_entity_id'   => (int) $ticket->getField('entities_id'),
-                    'source_type'        => (int) $ticket->getField('type'),
-                    'source_category_id' => (int) $ticket->getField('itilcategories_id'),
                     'target_entity_id'   => (int) $entities_id,
                     'target_type'        => (int) $type,
                     'target_category_id' => (int) $itilcategories_id,
-                    'failure_messages'   => $failure_messages,
-                    'new_input_keys'     => array_keys($new_input),
-                    'new_input_safe'     => self::sanitizeCloneInputForLog($new_input),
                 ]
             );
             self::logTimelineMessageIfEnabled(
                 self::TIMELINE_LOG_CLONE_FAILURE,
                 (int) $ticket->getID(),
-                sprintf(
-                    t_ebenezerclone('Clone failed for this ticket: %1$s'),
-                    $failure_summary
-                )
+                t_ebenezerclone('Clone failed for this ticket.')
             );
             Session::addMessageAfterRedirect(
-                sprintf(
-                    t_ebenezerclone('Failed to clone the ticket. Details: %1$s'),
-                    $failure_summary
-                ),
+                t_ebenezerclone('Failed to clone the ticket.'),
                 false,
                 ERROR
             );
@@ -820,7 +836,7 @@ JAVASCRIPT;
             $input['_users_id_' . $suffix] = [];
             foreach ($users as $user) {
                 $user_id = (int) ($user['users_id'] ?? 0);
-                if ($user_id <= 0) {
+                if (!self::canCopyActor(User::class, $user_id)) {
                     continue;
                 }
                 $input['_users_id_' . $suffix][] = $user_id;
@@ -833,7 +849,7 @@ JAVASCRIPT;
             $input['_groups_id_' . $suffix] = [];
             foreach ($groups as $group) {
                 $group_id = (int) ($group['groups_id'] ?? 0);
-                if ($group_id <= 0) {
+                if (!self::canCopyActor(Group::class, $group_id)) {
                     continue;
                 }
                 $input['_groups_id_' . $suffix][] = $group_id;
@@ -846,7 +862,7 @@ JAVASCRIPT;
             $input['_suppliers_id_' . $suffix] = [];
             foreach ($suppliers as $supplier) {
                 $supplier_id = (int) ($supplier['suppliers_id'] ?? 0);
-                if ($supplier_id <= 0) {
+                if (!self::canCopyActor(Supplier::class, $supplier_id)) {
                     continue;
                 }
                 $input['_suppliers_id_' . $suffix][] = $supplier_id;
@@ -855,6 +871,18 @@ JAVASCRIPT;
         }
 
         return $count;
+    }
+
+    private static function canCopyActor(string $itemtype, int $items_id): bool
+    {
+        if ($items_id <= 0) {
+            return false;
+        }
+
+        $actor = getItemForItemtype($itemtype);
+        return $actor !== false
+            && $actor->getFromDB($items_id)
+            && $actor->can($items_id, READ);
     }
 
     private static function getActorInputSuffixByRole(int $role): string
@@ -879,33 +907,31 @@ JAVASCRIPT;
         $source_ticket_id = (int) $ticket->getID();
         $link = new Ticket_Ticket();
         $count = 0;
-        foreach ($DB->request('glpi_tickets_tickets', [
-            'OR' => [
-                ['tickets_id_1' => $source_ticket_id],
-                ['tickets_id_2' => $source_ticket_id],
-            ],
-        ]) as $row) {
-            $tickets_id_1 = (int) ($row['tickets_id_1'] ?? 0);
-            $tickets_id_2 = (int) ($row['tickets_id_2'] ?? 0);
-            $relation_type = (int) ($row['link'] ?? 0);
-
-            if ($tickets_id_1 <= 0 || $tickets_id_2 <= 0) {
+        foreach (Ticket_Ticket::getLinkedTicketsTo($source_ticket_id, false) as $link_data) {
+            $related_ticket_id = (int) ($link_data['tickets_id'] ?? 0);
+            $relation_type = (int) ($link_data['link'] ?? 0);
+            $related_ticket = new Ticket();
+            if (
+                $related_ticket_id <= 0
+                || !$related_ticket->getFromDB($related_ticket_id)
+                || !$related_ticket->can($related_ticket_id, READ)
+            ) {
                 continue;
             }
 
-            if ($tickets_id_1 === $source_ticket_id) {
-                $tickets_id_1 = $new_id;
-            } elseif ($tickets_id_2 === $source_ticket_id) {
+            if (isset($link_data['tickets_id_1'])) {
+                $tickets_id_1 = (int) $link_data['tickets_id_1'];
                 $tickets_id_2 = $new_id;
             } else {
-                continue;
+                $tickets_id_1 = $new_id;
+                $tickets_id_2 = $related_ticket_id;
             }
 
             if ($tickets_id_1 === $tickets_id_2) {
                 continue;
             }
 
-            if (countElementsInTable('glpi_tickets_tickets', [
+            if (countElementsInTable(Ticket_Ticket::getTable(), [
                 'tickets_id_1' => $tickets_id_1,
                 'tickets_id_2' => $tickets_id_2,
                 'link' => $relation_type,
@@ -940,16 +966,19 @@ JAVASCRIPT;
             }
 
             $related_item = getItemForItemtype($itemtype);
-            if (!$related_item || !$related_item->getFromDB($items_id)) {
-                Toolbox::logDebug(
-                    'EBENEZERCLONE copyRelatedItems skipped missing item',
-                    [
-                        'source_ticket_id' => $source_ticket_id,
-                        'target_ticket_id' => (int) $new_id,
-                        'itemtype'         => $itemtype,
-                        'items_id'         => $items_id,
-                    ]
-                );
+            if (
+                !$related_item
+                || !$related_item->getFromDB($items_id)
+                || !$related_item->can($items_id, READ)
+            ) {
+                continue;
+            }
+
+            if (countElementsInTable(Item_Ticket::getTable(), [
+                'tickets_id' => (int) $new_id,
+                'itemtype'   => $itemtype,
+                'items_id'   => $items_id,
+            ]) > 0) {
                 continue;
             }
 
@@ -965,7 +994,7 @@ JAVASCRIPT;
                     'ticket',
                     4,
                     'tracking',
-                    sprintf(__('%s adds a link with an item'), $_SESSION['glpiname'] ?? 'anonymous')
+                    t_ebenezerclone('Related item link copied during clone.')
                 );
                 $count++;
                 continue;
@@ -995,12 +1024,33 @@ JAVASCRIPT;
             'itemtype' => Ticket::class,
             'items_id' => (int) $ticket->getID(),
         ]) as $row) {
-            $input = [
-                'documents_id' => (int) $row['documents_id'],
+            $documents_id = (int) ($row['documents_id'] ?? 0);
+            $entities_id = (int) ($row['entities_id'] ?? 0);
+            $is_recursive = !empty($row['is_recursive']);
+            $document = new Document();
+            if (
+                $documents_id <= 0
+                || !$document->getFromDB($documents_id)
+                || !$document->can($documents_id, READ)
+                || !Session::haveAccessToEntity($entities_id, $is_recursive)
+            ) {
+                continue;
+            }
+
+            if (countElementsInTable($document_item->getTable(), [
+                'documents_id' => $documents_id,
                 'itemtype'     => Ticket::class,
                 'items_id'     => (int) $new_id,
-                'entities_id'  => (int) ($row['entities_id'] ?? 0),
-                'is_recursive' => (int) ($row['is_recursive'] ?? 1),
+            ]) > 0) {
+                continue;
+            }
+
+            $input = [
+                'documents_id' => $documents_id,
+                'itemtype'     => Ticket::class,
+                'items_id'     => (int) $new_id,
+                'entities_id'  => $entities_id,
+                'is_recursive' => $is_recursive ? 1 : 0,
                 'users_id'     => (int) ($row['users_id'] ?? 0),
             ];
 
@@ -1125,7 +1175,7 @@ JAVASCRIPT;
         Log::history(
             $ticket_id,
             Ticket::class,
-            [self::TIMELINE_LOG_SEARCH_OPTION, '', addslashes($message)],
+            [self::TIMELINE_LOG_SEARCH_OPTION, '', $message],
             0,
             Log::HISTORY_LOG_SIMPLE_MESSAGE
         );
@@ -1433,12 +1483,9 @@ JAVASCRIPT;
         if ($expected_name !== '' && $actual_name !== $expected_name) {
             Toolbox::logDebug('EBENEZERCLONE post-clone validation failed', [
                 'reason' => 'name_mismatch',
+                'plugin_version' => PLUGIN_EBENEZERCLONE_VERSION,
                 'clone_ticket_id' => $new_ticket_id,
                 'source_ticket_id' => (int) $source_ticket->getID(),
-                'expected_name' => $expected_name,
-                'actual_name' => $actual_name,
-                'expected_type' => $expected_type,
-                'actual_type' => $actual_type,
             ]);
         }
 

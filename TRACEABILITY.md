@@ -20,7 +20,7 @@ cada commit no versionamento:
 4. Quando houver nova release (novo SemVer), iniciar novo bloco de ledger.
 
 Exemplo:
-- Release no `setup.php`: `3.1.27`
+- Release no `setup.php`: `3.1.28`
 - Commit: `6848b3f2`
 - Versão efetiva rastreável: `3.1.27+git.<short_sha>`
 
@@ -109,6 +109,15 @@ Criterio: ajuste de governanca para manter referencias locais GLPI apenas nas in
 Arvore logica de entrega:
 - Governanca de uso
   - `HEAD` (remove referencia dos guias locais do README e mantem apontamento no AGENTS)
+
+### 3.1.28 (patch release)
+Criterio: correcao compatível de seguranca, LGPD, ACL e metadata GLPI 10.
+
+Arvore logica de entrega:
+- Compatibilidade e configuracoes globais
+  - `HEAD` (faixa GLPI, migracao retrocompativel e regras independentes)
+- Backend e minimizacao
+  - `HEAD` (CSRF, entidade/categoria, relacionados, logs e acao nativa)
 ## Matriz de rastreio
 
 | Item | Identificador |
@@ -118,7 +127,7 @@ Arvore logica de entrega:
 | PRs relacionados | `#10`, `#11`, `#12` |
 | Merges relevantes em `main` | `3d0af347`, `085b0e4a`, `354035a9` |
 | Tags HML relacionadas | `v10.0.20-hml-003`, `v10.0.20-hml-004`, `v10.0.20-hml-005` |
-| Versão atual do plugin | `3.1.27` |
+| Versão atual do plugin | `3.1.28` |
 | Regra de build por commit | `<release>+git.<short_sha>` |
 
 ## Regra operacional para próximos commits
