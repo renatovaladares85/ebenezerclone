@@ -13,6 +13,8 @@ class PluginEbenezercloneConfig extends CommonDBTM
     public const CONFIG_KEY_GLOBAL_CLONE_COPY_POLICIES = 'global_clone_copy_policies';
     public const CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE = 'force_assigned_status_on_clone';
     public const CONFIG_KEY_RECALCULATE_TITLE_FROM_CATEGORY = 'recalculate_title_from_category';
+    public const CONFIG_KEY_SHOW_HIDDEN_RELATED_TICKETS = 'show_hidden_related_tickets';
+    public const CONFIG_KEY_REQUIRE_GLPI_TICKET_CREATE_PERMISSION = 'require_glpi_ticket_create_permission';
 
     public const PERMISSION_CLONE_TICKET = 'clone_ticket';
     public const COPY_POLICY_COPY = 'copy';
@@ -51,6 +53,8 @@ class PluginEbenezercloneConfig extends CommonDBTM
             'timeline_log_clone_failure' => 1,
             self::CONFIG_KEY_FORCE_ASSIGNED_STATUS_ON_CLONE => 1,
             self::CONFIG_KEY_RECALCULATE_TITLE_FROM_CATEGORY => 0,
+            self::CONFIG_KEY_SHOW_HIDDEN_RELATED_TICKETS => 0,
+            self::CONFIG_KEY_REQUIRE_GLPI_TICKET_CREATE_PERMISSION => 1,
             self::CONFIG_KEY_GLOBAL_CLONE_COPY_POLICIES => '{}',
         ];
     }
@@ -367,6 +371,26 @@ class PluginEbenezercloneConfig extends CommonDBTM
     {
         $config = array_merge(self::getDefaults(), Config::getConfigurationValues('ebenezerclone'));
         return !empty($config[self::CONFIG_KEY_RECALCULATE_TITLE_FROM_CATEGORY]);
+    }
+
+    public static function shouldShowHiddenRelatedTickets(): bool
+    {
+        $config = Config::getConfigurationValues('ebenezerclone');
+        if (!array_key_exists(self::CONFIG_KEY_SHOW_HIDDEN_RELATED_TICKETS, $config)) {
+            return true;
+        }
+
+        return !empty($config[self::CONFIG_KEY_SHOW_HIDDEN_RELATED_TICKETS]);
+    }
+
+    public static function shouldRequireGlpiTicketCreatePermission(): bool
+    {
+        $config = Config::getConfigurationValues('ebenezerclone');
+        if (!array_key_exists(self::CONFIG_KEY_REQUIRE_GLPI_TICKET_CREATE_PERMISSION, $config)) {
+            return false;
+        }
+
+        return !empty($config[self::CONFIG_KEY_REQUIRE_GLPI_TICKET_CREATE_PERMISSION]);
     }
 
     public static function hasProfilePermission(string $permission_key, ?int $profile_id = null, ?int $entity_id = null): ?bool
@@ -829,7 +853,7 @@ class PluginEbenezercloneConfig extends CommonDBTM
                 continue;
             }
 
-            if (str_ends_with($key, '_mode')) {
+            if (substr($key, -5) === '_mode') {
                 $value = $input[$key] ?? $defaults[$key];
                 $field_key = null;
                 foreach (self::getFieldDefinitions() as $candidate_field_key => $definition) {
@@ -863,6 +887,14 @@ class PluginEbenezercloneConfig extends CommonDBTM
             }
 
             if ($key === self::CONFIG_KEY_RECALCULATE_TITLE_FROM_CATEGORY) {
+                $output[$key] = !empty($input[$key]) ? 1 : 0;
+                continue;
+            }
+
+            if (
+                $key === self::CONFIG_KEY_SHOW_HIDDEN_RELATED_TICKETS
+                || $key === self::CONFIG_KEY_REQUIRE_GLPI_TICKET_CREATE_PERMISSION
+            ) {
                 $output[$key] = !empty($input[$key]) ? 1 : 0;
                 continue;
             }
@@ -1136,6 +1168,14 @@ class PluginEbenezercloneConfig extends CommonDBTM
                 t_ebenezerclone('Checked: title is always recalculated from selected category in clone form. Unchecked: title always keeps source ticket title.'),
                 ['display' => false]
             );
+            $show_hidden_related_tickets_tooltip = Html::showToolTip(
+                t_ebenezerclone('Checked: shows related tickets hidden by the native interface. This can broaden visibility of relationship metadata and must be enabled only after confidentiality review.'),
+                ['display' => false]
+            );
+            $require_glpi_ticket_create_permission_tooltip = Html::showToolTip(
+                t_ebenezerclone('Checked: cloning also requires the native GLPI Ticket create right in the final entity. Unchecked: the plugin authorization still applies, but disabling this requirement increases security risk.'),
+                ['display' => false]
+            );
             echo "<div class='mb-2'>";
             if ($canedit) {
                 Html::showCheckbox([
@@ -1159,6 +1199,30 @@ class PluginEbenezercloneConfig extends CommonDBTM
             }
             echo "&nbsp;<span>" . t_ebenezerclone('Recalculate title from selected category') . "</span>";
             echo "&nbsp;$recalculate_title_tooltip";
+            echo "</div>";
+            echo "<div class='mb-2'>";
+            if ($canedit) {
+                Html::showCheckbox([
+                    'name'    => self::CONFIG_KEY_SHOW_HIDDEN_RELATED_TICKETS,
+                    'checked' => !empty($values[self::CONFIG_KEY_SHOW_HIDDEN_RELATED_TICKETS]),
+                ]);
+            } else {
+                echo !empty($values[self::CONFIG_KEY_SHOW_HIDDEN_RELATED_TICKETS]) ? __('Yes') : __('No');
+            }
+            echo "&nbsp;<span>" . t_ebenezerclone('Show related tickets hidden by native visibility') . "</span>";
+            echo "&nbsp;$show_hidden_related_tickets_tooltip";
+            echo "</div>";
+            echo "<div class='mb-2'>";
+            if ($canedit) {
+                Html::showCheckbox([
+                    'name'    => self::CONFIG_KEY_REQUIRE_GLPI_TICKET_CREATE_PERMISSION,
+                    'checked' => !empty($values[self::CONFIG_KEY_REQUIRE_GLPI_TICKET_CREATE_PERMISSION]),
+                ]);
+            } else {
+                echo !empty($values[self::CONFIG_KEY_REQUIRE_GLPI_TICKET_CREATE_PERMISSION]) ? __('Yes') : __('No');
+            }
+            echo "&nbsp;<span>" . t_ebenezerclone('Require native GLPI Ticket create permission') . "</span>";
+            echo "&nbsp;$require_glpi_ticket_create_permission_tooltip";
             echo "</div>";
             foreach ($component_definitions as $copy_key => $copy_definition) {
                 $copy_label = (string) ($copy_definition['label'] ?? $copy_key);
@@ -1465,10 +1529,20 @@ JAVASCRIPT;
     {
         $defaults = self::getDefaults();
         $current = Config::getConfigurationValues('ebenezerclone');
+        $is_new_install = empty($current);
         if (empty($current)) {
             $legacy = Config::getConfigurationValues('tr' . 'tclone');
             if (!empty($legacy)) {
                 $current = $legacy;
+                $is_new_install = false;
+            }
+        }
+        if (!$is_new_install) {
+            if (!array_key_exists(self::CONFIG_KEY_SHOW_HIDDEN_RELATED_TICKETS, $current)) {
+                $current[self::CONFIG_KEY_SHOW_HIDDEN_RELATED_TICKETS] = 1;
+            }
+            if (!array_key_exists(self::CONFIG_KEY_REQUIRE_GLPI_TICKET_CREATE_PERMISSION, $current)) {
+                $current[self::CONFIG_KEY_REQUIRE_GLPI_TICKET_CREATE_PERMISSION] = 0;
             }
         }
         Config::setConfigurationValues('ebenezerclone', array_merge($defaults, $current));

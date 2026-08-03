@@ -2,13 +2,13 @@
 
 use Glpi\Plugin\Hooks;
 
-define('PLUGIN_EBENEZERCLONE_VERSION', '3.1.27');
+define('PLUGIN_EBENEZERCLONE_VERSION', '3.1.28');
 
 // Minimal GLPI version, inclusive
-define('PLUGIN_EBENEZERCLONE_MIN_GLPI_VERSION', '10.0.0');
+define('PLUGIN_EBENEZERCLONE_MIN_GLPI_VERSION', '10.0.20');
 
 // Maximum GLPI version, exclusive
-define('PLUGIN_EBENEZERCLONE_MAX_GLPI_VERSION', '10.0.99');
+define('PLUGIN_EBENEZERCLONE_MAX_GLPI_VERSION', '11.0.0');
 
 function plugin_init_ebenezerclone()
 {
@@ -22,7 +22,13 @@ function plugin_init_ebenezerclone()
         Plugin::registerClass('PluginEbenezercloneClone', ['addtabon' => 'Ticket']);
         Plugin::registerClass('PluginEbenezercloneConfig', ['addtabon' => 'Config']);
 
-        $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['ebenezerclone'][] = 'js/ebenezerclone.js';
+        $plugin_config = Config::getConfigurationValues('ebenezerclone');
+        $show_hidden_related_tickets = !array_key_exists('show_hidden_related_tickets', $plugin_config)
+            || !empty($plugin_config['show_hidden_related_tickets']);
+
+        if ($show_hidden_related_tickets) {
+            $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['ebenezerclone'][] = 'js/ebenezerclone.js';
+        }
         $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['ebenezerclone'][] = 'js/restrict_native_clone_actions.js.php';
         $PLUGIN_HOOKS[Hooks::PRE_ITEM_ADD]['ebenezerclone'] = [
             'Ticket' => 'plugin_ebenezerclone_pre_item_add_ticket',

@@ -2,7 +2,7 @@
 
 Plugin para GLPI 10.0.x que adiciona uma aba para clonar chamados com rastreabilidade entre ticket de origem e ticket novo.
 
-- Versão: 3.1.27
+- Versão: 3.1.28
 - Autor: Renato Valadares
 - Licença: GPL v2+
 
@@ -23,7 +23,7 @@ Plugin para GLPI 10.0.x que adiciona uma aba para clonar chamados com rastreabil
 
 ## Requisitos
 
-- GLPI `10.0.x` (`>= 10.0.0` e `< 10.0.99` na metadata do plugin)
+- GLPI `>= 10.0.20` e `< 11.0.0`
 - Plugin em `plugins/ebenezerclone`
 - Permissões de ticket no perfil e direito do plugin habilitado
 
@@ -40,10 +40,10 @@ Direito principal do plugin:
 
 - `plugin_ebenezerclone_clone`
 
-Com esse direito e permissões de ticket no perfil:
+Com esse direito e leitura do chamado de origem:
 
-- a aba **Clonar chamado** fica visível para quem pode ler o ticket e criar tickets;
-- a ação de clonagem exige permissão de criação de ticket.
+- a aba **Clonar chamado** fica visível para os escopos perfil + entidade configurados;
+- a criação nativa de Ticket é exigida somente quando a opção global correspondente estiver habilitada.
 
 ## Como usar
 
@@ -119,28 +119,16 @@ Após criar o clone, o plugin:
 
 Se o template ITIL exigir categoria para o tipo/cenário informado, a clonagem falha quando a categoria não for válida/definida.
 
-## Regras de negócio (edição após abertura)
-
-No `pre_item_update` de Ticket, o plugin aplica proteção:
-
-- bloqueia alteração de propriedades do ticket após abertura (campos como tipo, categoria, status, prioridade, SLA, datas etc.);
-- permite alteração de atribuídos apenas quando a regra de permissão for atendida.
-
-Permissão para editar atribuídos:
-
-- sempre permitido em ticket novo;
-- negado em ticket fechado;
-- permitido para perfil ativo `id = 10`;
-- permitido quando usuário pertence a um grupo já atribuído ao ticket.
-
-Quando não permitido, o plugin remove a mutação de atribuídos da requisição e registra mensagem de erro.
-
 ## Configurações disponíveis
 
 Em **Configurar > Geral > Ebenezer Clone**:
 
 - modo dos campos do formulário de clone;
-- opção **Default remove author from assigned**.
+- políticas globais de cópia, incluindo `items` para vínculos de chamados relacionados e `ticket_link` para o vínculo origem-clone;
+- exibição adicional de chamados relacionados ocultados pela ACL nativa;
+- exigência do direito nativo de criação de Ticket no GLPI.
+
+Em instalação nova, a exibição adicional inicia desabilitada e a exigência do direito nativo inicia habilitada. Em upgrade, a ausência dessas chaves preserva o comportamento legado.
 
 Observação importante:
 
@@ -149,7 +137,7 @@ Observação importante:
 ## Estrutura do plugin
 
 - `setup.php`: metadados, hooks e registro das classes
-- `hook.php`: instalação/desinstalação e hook `pre_item_update`
+- `hook.php`: instalação/desinstalação e controle da ação nativa de clonagem no contexto web central
 - `front/clone.form.php`: endpoint de submissão da clonagem
 - `front/config.form.php`: acesso à configuração
 - `inc/clone.class.php`: lógica de clonagem, validações e regras de edição

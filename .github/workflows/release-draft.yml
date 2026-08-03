@@ -1,0 +1,38 @@
+name: Release draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Exact version tag (for example, v3.1.28)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: production-release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+      - name: Install validation tools
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gettext zip
+      - name: Validate
+        run: bash scripts/validate_i18n_and_php.sh
+      - name: Package
+        run: bash scripts/package_release.sh --tag '${{ inputs.tag }}'
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create '${{ inputs.tag }}' dist/ebenezerclone-*.zip dist/ebenezerclone-*.tar.gz dist/SHA256SUMS dist/RELEASE-MANIFEST.json
+          --draft --title '${{ inputs.tag }}' --generate-notes

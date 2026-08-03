@@ -6,8 +6,15 @@ header('Content-Type: application/javascript');
 
 if (
     ($_SESSION['glpiactiveprofile']['interface'] ?? '') !== 'central'
-    || ($_SESSION['glpiactiveprofile']['name'] ?? '') === 'Super-Admin'
 ) {
+    return;
+}
+
+if (!class_exists('PluginEbenezercloneClone')) {
+    include_once __DIR__ . '/../inc/clone.class.php';
+}
+
+if (PluginEbenezercloneClone::canUseTicketCloneActionInCurrentProfile()) {
     return;
 }
 

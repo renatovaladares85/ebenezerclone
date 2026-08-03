@@ -6,6 +6,15 @@ header('Content-Type: application/json; charset=UTF-8');
 
 Session::checkLoginUser();
 
+if (!PluginEbenezercloneConfig::shouldShowHiddenRelatedTickets()) {
+    http_response_code(404);
+    echo json_encode([
+        'ok' => false,
+        'error' => 'not_found',
+    ]);
+    exit;
+}
+
 $ticket_id = (int) ($_GET['tickets_id'] ?? 0);
 if ($ticket_id <= 0) {
     http_response_code(400);
@@ -45,7 +54,6 @@ foreach ($missing_links as $relation_id => $link_data) {
             isset($link_data['tickets_id_1']),
             false
         ),
-        'url'         => Ticket::getFormURLWithID($related_ticket_id),
         'title'       => sprintf(t_ebenezerclone('Linked ticket #%1$s'), $related_ticket_id),
     ];
 }
@@ -53,7 +61,4 @@ foreach ($missing_links as $relation_id => $link_data) {
 echo json_encode([
     'ok'            => true,
     'items'         => $items,
-    'total_links'   => count($all_links),
-    'visible_links' => count($visible_links),
 ]);
-

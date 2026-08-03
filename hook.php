@@ -35,12 +35,6 @@ function plugin_ebenezerclone_pre_item_update($item)
     return true;
 }
 
-function plugin_ebenezerclone_is_super_admin_profile()
-{
-    return isset($_SESSION['glpiactiveprofile']['name'])
-        && $_SESSION['glpiactiveprofile']['name'] === 'Super-Admin';
-}
-
 function plugin_ebenezerclone_pre_item_add_ticket($item)
 {
     if (!($item instanceof Ticket)) {
@@ -48,11 +42,21 @@ function plugin_ebenezerclone_pre_item_add_ticket($item)
     }
 
     if (
-        plugin_ebenezerclone_is_super_admin_profile()
+        PHP_SAPI === 'cli'
+        || ($_SESSION['glpiactiveprofile']['interface'] ?? '') !== 'central'
         || !is_array($item->input)
         || empty($item->input)
         || empty($item->input['clone'])
     ) {
+        return true;
+    }
+
+    if (!class_exists('PluginEbenezercloneClone')) {
+        include_once __DIR__ . '/inc/clone.class.php';
+    }
+
+    $entity_id = (int) ($item->input['entities_id'] ?? ($_SESSION['glpiactive_entity'] ?? 0));
+    if (PluginEbenezercloneClone::canUseTicketCloneActionInCurrentProfile($entity_id)) {
         return true;
     }
 
