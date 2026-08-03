@@ -25,14 +25,42 @@ jobs:
         with:
           php-version: '7.4'
       - name: Install validation tools
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gettext zip
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gettext zip ripgrep
+      - name: Validate required commands
+        run: |
+          set -euo pipefail
+          command -v rg
+          command -v msgfmt
+          command -v zip
       - name: Validate
-        run: bash scripts/validate_i18n_and_php.sh
+        run: |
+          set -euo pipefail
+          bash scripts/validate_i18n_and_php.sh
+          bash -n scripts/validate_i18n_and_php.sh
+          bash -n scripts/package_release.sh
+          bash -n scripts/read_plugin_version.sh
+          bash -n scripts/check_forbidden_references.sh
+          bash scripts/check_forbidden_references.sh
+      - name: Validate release tag
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          bash scripts/package_release.sh --tag "$RELEASE_TAG" --dry-run
       - name: Package
-        run: bash scripts/package_release.sh --tag '${{ inputs.tag }}'
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          bash scripts/package_release.sh --tag "$RELEASE_TAG"
       - name: Create draft release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: >-
-          gh release create '${{ inputs.tag }}' dist/ebenezerclone-*.zip dist/ebenezerclone-*.tar.gz dist/SHA256SUMS dist/RELEASE-MANIFEST.json
-          --draft --title '${{ inputs.tag }}' --generate-notes
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          gh release create "$RELEASE_TAG" dist/ebenezerclone-*.zip dist/ebenezerclone-*.tar.gz dist/SHA256SUMS dist/RELEASE-MANIFEST.json \
+            --draft --title "$RELEASE_TAG" --generate-notes

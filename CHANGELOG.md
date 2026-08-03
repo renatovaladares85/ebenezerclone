@@ -22,6 +22,7 @@ Regra de rastreio por commit (obrigatória):
 
 ### Ledger de commits da versão (100% rastreável)
 - `3.1.28+git.<pending>` - harden clone ACL, CSRF, LGPD logging and GLPI 10 metadata
+- `3.1.28+git.<pending>` - make CI validation dependencies and package version parsing explicit
 
 ## [3.1.27] - 2026-07-09
 

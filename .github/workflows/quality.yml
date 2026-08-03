@@ -17,14 +17,30 @@ jobs:
         with:
           php-version: '7.4'
       - name: Install validation tools
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gettext zip
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gettext zip ripgrep
+      - name: Validate required commands
+        run: |
+          set -euo pipefail
+          command -v rg
+          command -v msgfmt
+          command -v zip
       - name: PHP lint and i18n
         run: bash scripts/validate_i18n_and_php.sh
-      - name: Validate shell script
-        run: bash -n scripts/package_release.sh
+      - name: Validate shell scripts
+        run: |
+          set -euo pipefail
+          bash -n scripts/validate_i18n_and_php.sh
+          bash -n scripts/package_release.sh
+          bash -n scripts/read_plugin_version.sh
+          bash -n scripts/check_forbidden_references.sh
       - name: Check forbidden client references
-        run: >-
-          ! rg -n -i -P '(?<![\p{L}\p{N}_])(trt|tribunal(?:\s+regional\s+do\s+trabalho)?|poder\s+judiciário|judiciário|judiciario|cnj|pje)(?![\p{L}\p{N}_])'
-          . -g '!.git/**' -g '!.github/**' -g '!inc/config.class.php'
+        run: bash scripts/check_forbidden_references.sh
       - name: Package dry-run
-        run: bash scripts/package_release.sh --tag v$(rg -No "PLUGIN_EBENEZERCLONE_VERSION', '[0-9]+\.[0-9]+\.[0-9]+" setup.php | sed -E "s/.*'([0-9]+\.[0-9]+\.[0-9]+)$/\1/") --dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(bash scripts/read_plugin_version.sh setup.php)"
+          bash scripts/package_release.sh --tag "v${version}" --dry-run

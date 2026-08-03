@@ -9,10 +9,18 @@ DRY_RUN=0
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --output-dir)
+            if [[ $# -lt 2 ]]; then
+                echo "Option --output-dir requires a value." >&2
+                exit 2
+            fi
             OUTPUT_DIR="$2"
             shift 2
             ;;
         --tag)
+            if [[ $# -lt 2 ]]; then
+                echo "Option --tag requires a value." >&2
+                exit 2
+            fi
             RELEASE_TAG="$2"
             shift 2
             ;;
@@ -27,20 +35,34 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ -z "$RELEASE_TAG" ]]; then
-    echo "A release tag is required." >&2
+if [[ ! "$RELEASE_TAG" =~ ^v?([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+    echo "A release tag in X.Y.Z or vX.Y.Z format is required." >&2
     exit 2
 fi
 
-VERSION="$(rg -No "PLUGIN_EBENEZERCLONE_VERSION', '[0-9]+\.[0-9]+\.[0-9]+" "$ROOT_DIR/setup.php" | sed -E "s/.*'([0-9]+\.[0-9]+\.[0-9]+)$/\1/")"
-if [[ -z "$VERSION" ]]; then
-    echo "Unable to read the plugin version." >&2
-    exit 2
-fi
+VERSION="$(bash "$ROOT_DIR/scripts/read_plugin_version.sh" "$ROOT_DIR/setup.php")"
+TAG_VERSION="${BASH_REMATCH[1]}"
 
-if [[ "$RELEASE_TAG" != "v$VERSION" && "$RELEASE_TAG" != "$VERSION" ]]; then
+if [[ "$TAG_VERSION" != "$VERSION" ]]; then
     echo "Release tag does not match plugin version." >&2
     exit 2
+fi
+
+require_command() {
+    if ! command -v "$1" >/dev/null 2>&1; then
+        echo "Required command not found: $1" >&2
+        exit 127
+    fi
+}
+
+for command in bash sed find sort mktemp cp cat; do
+    require_command "$command"
+done
+
+if [[ "$DRY_RUN" -eq 0 ]]; then
+    for command in zip tar sha256sum git paste date; do
+        require_command "$command"
+    done
 fi
 
 STAGING_DIR="$(mktemp -d)"
