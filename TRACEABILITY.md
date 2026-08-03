@@ -117,7 +117,7 @@ Arvore logica de entrega:
 - Compatibilidade e configuracoes globais
   - `HEAD` (faixa GLPI, migracao retrocompativel e regras independentes)
 - Backend e minimizacao
-  - `HEAD` (CSRF, entidade/categoria, relacionados, logs e acao nativa)
+  - `HEAD` (CSRF automatico no bootstrap, entidade/categoria, relacionados, logs e acao nativa)
 ## Matriz de rastreio
 
 | Item | Identificador |

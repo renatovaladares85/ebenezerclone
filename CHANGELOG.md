@@ -16,13 +16,15 @@ Regra de rastreio por commit (obrigatória):
 - Restringe a compatibilidade declarada a GLPI `>= 10.0.20` e `< 11.0.0`.
 - Adiciona configurações globais independentes para exibição adicional de relacionados e exigência do direito nativo de criação de Ticket.
 - Preserva o comportamento efetivo de upgrades: exibição adicional ligada e direito nativo dispensado quando as novas chaves ainda não existirem.
-- Exige POST, CSRF, leitura da origem, categoria visível/compatível, entidade final acessível e, quando configurado, criação nativa no backend.
+- Mantém a validação CSRF automática do GLPI e remove a segunda validação do token de uso único no endpoint de clonagem, permitindo que a rotina de clonagem seja alcançada sem reduzir a proteção.
+- Exige POST, leitura da origem, categoria visível/compatível, entidade final acessível e, quando configurado, criação nativa no backend.
 - Reduz exposição do endpoint de relacionados e remove dependência do perfil `Super-Admin`.
 - Minimiza logs e mensagens de falha, sem conteúdo livre, títulos ou detalhes internos.
 
 ### Ledger de commits da versão (100% rastreável)
 - `3.1.28+git.<pending>` - harden clone ACL, CSRF, LGPD logging and GLPI 10 metadata
 - `3.1.28+git.<pending>` - make CI validation dependencies and package version parsing explicit
+- `3.1.28+git.<pending>` - fix duplicate CSRF validation in clone endpoint
 
 ## [3.1.27] - 2026-07-09
 
