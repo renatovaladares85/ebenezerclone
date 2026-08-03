@@ -19,10 +19,8 @@ cada commit no versionamento:
 3. O changelog deve conter um ledger com todos os commits da release ativa.
 4. Quando houver nova release (novo SemVer), iniciar novo bloco de ledger.
 
-Exemplo:
-- Release no `setup.php`: `3.1.28`
-- Commit: `6848b3f2`
-- Versão efetiva rastreável: `3.1.27+git.<short_sha>`
+Para commits de preparação de release, cuja identificação seria circular dentro
+do próprio commit, a tag anotada da release é a fonte de rastreabilidade.
 
 ## DRE principal
 - `2601300202` - Clonagem de chamados
@@ -115,25 +113,32 @@ Criterio: correcao compatível de seguranca, LGPD, ACL e metadata GLPI 10.
 
 Arvore logica de entrega:
 - Compatibilidade e configuracoes globais
-  - `HEAD` (faixa GLPI, migracao retrocompativel e regras independentes)
+  - `04cbbe5` (faixa GLPI, migracao retrocompativel e regras independentes)
 - Backend e minimizacao
-  - `HEAD` (CSRF automatico no bootstrap, entidade/categoria, relacionados, logs e acao nativa)
+  - `04cbbe5` (CSRF automatico no bootstrap, entidade/categoria, relacionados, logs e acao nativa)
+- Automação de qualidade e release
+  - `b2ab8ad` (dependências explícitas de validação e empacotamento)
 
 ### 3.1.29 (patch release)
 Criterio: restauracao compativel do modo permissivo de clonagem, mantendo o modo estrito por permissao nativa.
 
 Arvore logica de entrega:
 - Modos de permissao na clonagem
-  - `HEAD` (ACL do plugin obrigatoria, integridade da categoria e ACLs nativas condicionadas ao modo estrito)
+  - `a8e9ceb` (remove validação CSRF duplicada no endpoint)
+  - `d7239e7` (restaura modo permissivo e preserva modo estrito)
+  - `13e0728` (merge do PR #5 em `main`)
+- Preparação de release
+  - Tag planejada: `v3.1.29`
 ## Matriz de rastreio
 
 | Item | Identificador |
 |---|---|
 | DRE | `2601300202` |
-| Branch principal de trabalho | `feature/2601300202-clonagem-chamados` |
-| PRs relacionados | `#10`, `#11`, `#12` |
-| Merges relevantes em `main` | `3d0af347`, `085b0e4a`, `354035a9` |
-| Tags HML relacionadas | `v10.0.20-hml-003`, `v10.0.20-hml-004`, `v10.0.20-hml-005` |
+| Branch de origem da release | `main` |
+| PR funcional | `#5` |
+| Commits funcionais | `a8e9ceb`, `d7239e7` |
+| Merge em `main` | `13e0728` |
+| Tag planejada | `v3.1.29` |
 | Versão atual do plugin | `3.1.29` |
 | Regra de build por commit | `<release>+git.<short_sha>` |
 

@@ -55,7 +55,7 @@ require_command() {
     fi
 }
 
-for command in bash sed find sort mktemp cp cat; do
+for command in bash sed find sort mktemp cp cat msgfmt; do
     require_command "$command"
 done
 
@@ -74,7 +74,9 @@ cp "$ROOT_DIR/setup.php" "$ROOT_DIR/hook.php" "$ROOT_DIR/LICENSE" "$PACKAGE_ROOT
 cp "$ROOT_DIR/front/"*.php "$PACKAGE_ROOT/front/"
 cp "$ROOT_DIR/inc/"*.php "$PACKAGE_ROOT/inc/"
 cp "$ROOT_DIR/js/ebenezerclone.js" "$ROOT_DIR/js/restrict_native_clone_actions.js.php" "$PACKAGE_ROOT/js/"
-cp "$ROOT_DIR/locales/pt_BR.mo" "$PACKAGE_ROOT/locales/"
+msgfmt --check \
+    --output-file="$PACKAGE_ROOT/locales/pt_BR.mo" \
+    "$ROOT_DIR/locales/pt_BR.po"
 cp "$ROOT_DIR/README.md" "$ROOT_DIR/CHANGELOG.md" "$PACKAGE_ROOT/"
 
 find "$PACKAGE_ROOT" -type f -printf '%P\n' | sort > "$STAGING_DIR/files.txt"
@@ -98,7 +100,10 @@ rm -f "$ZIP_FILE" "$TAR_FILE" "$MANIFEST_FILE" "$SUMS_FILE"
     tar -czf "$TAR_FILE" ebenezerclone
 )
 
-sha256sum "$ZIP_FILE" "$TAR_FILE" > "$SUMS_FILE"
+(
+    cd "$OUTPUT_DIR"
+    sha256sum "$(basename "$ZIP_FILE")" "$(basename "$TAR_FILE")" > "$(basename "$SUMS_FILE")"
+)
 FILES_JSON="$(sed 's/\\/\\\\/g; s/\"/\\\"/g; s/.*/\"&\"/' "$STAGING_DIR/files.txt" | paste -sd, -)"
 cat > "$MANIFEST_FILE" <<EOF
 {

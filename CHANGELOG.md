@@ -18,7 +18,9 @@ Regra de rastreio por commit (obrigatória):
 - Renomeia a opção para refletir que ela controla permissões nativas de categoria, entidade e criação, preservando a chave persistida e os defaults de instalação/upgrade.
 
 ### Ledger de commits da versão (100% rastreável)
-- `3.1.29+git.<pending>` - restore permissive clone mode while retaining strict native permissions
+- `3.1.29+git.a8e9ceb` - avoid duplicate CSRF validation in clone endpoint
+- `3.1.29+git.d7239e7` - restore permissive clone authorization mode
+- `3.1.29+git.13e0728` - merge PR #5 into main
 
 ## [3.1.28] - 2026-08-03
 
@@ -32,9 +34,8 @@ Regra de rastreio por commit (obrigatória):
 - Minimiza logs e mensagens de falha, sem conteúdo livre, títulos ou detalhes internos.
 
 ### Ledger de commits da versão (100% rastreável)
-- `3.1.28+git.<pending>` - harden clone ACL, CSRF, LGPD logging and GLPI 10 metadata
-- `3.1.28+git.<pending>` - make CI validation dependencies and package version parsing explicit
-- `3.1.28+git.<pending>` - fix duplicate CSRF validation in clone endpoint
+- `3.1.28+git.04cbbe5` - harden clone ACL, CSRF, LGPD logging and GLPI 10 metadata
+- `3.1.28+git.b2ab8ad` - make CI validation dependencies and package version parsing explicit
 
 ## [3.1.27] - 2026-07-09
 

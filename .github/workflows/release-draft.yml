@@ -49,6 +49,7 @@ jobs:
           RELEASE_TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
+          test -f "docs/releases/${RELEASE_TAG}.md"
           bash scripts/package_release.sh --tag "$RELEASE_TAG" --dry-run
       - name: Package
         env:
@@ -63,4 +64,4 @@ jobs:
         run: |
           set -euo pipefail
           gh release create "$RELEASE_TAG" dist/ebenezerclone-*.zip dist/ebenezerclone-*.tar.gz dist/SHA256SUMS dist/RELEASE-MANIFEST.json \
-            --draft --title "$RELEASE_TAG" --generate-notes
+            --draft --title "Ebenezer Clone ${RELEASE_TAG#v}" --notes-file "docs/releases/${RELEASE_TAG}.md"
