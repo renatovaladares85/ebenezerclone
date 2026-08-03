@@ -10,6 +10,16 @@ Regra de rastreio por commit (obrigatória):
   - `VERSAO_EFETIVA = <semver_release>+git.<short_sha>`
   - Exemplo: `1.0.1+git.6848b3f2`
 
+## [3.1.29] - 2026-08-03
+
+### Patch release
+- Restaura o modo permissivo: com permissões nativas desmarcadas, mantém validações de integridade e autorização do plugin, sem exigir ACLs nativas de categoria, entidade ou criação antes da clonagem.
+- No modo estrito, aplica essas ACLs nativas antes da criação e impede vínculos parciais quando alguma delas falhar.
+- Renomeia a opção para refletir que ela controla permissões nativas de categoria, entidade e criação, preservando a chave persistida e os defaults de instalação/upgrade.
+
+### Ledger de commits da versão (100% rastreável)
+- `3.1.29+git.<pending>` - restore permissive clone mode while retaining strict native permissions
+
 ## [3.1.28] - 2026-08-03
 
 ### Patch release
@@ -17,7 +27,7 @@ Regra de rastreio por commit (obrigatória):
 - Adiciona configurações globais independentes para exibição adicional de relacionados e exigência do direito nativo de criação de Ticket.
 - Preserva o comportamento efetivo de upgrades: exibição adicional ligada e direito nativo dispensado quando as novas chaves ainda não existirem.
 - Mantém a validação CSRF automática do GLPI e remove a segunda validação do token de uso único no endpoint de clonagem, permitindo que a rotina de clonagem seja alcançada sem reduzir a proteção.
-- Exige POST, leitura da origem, categoria visível/compatível, entidade final acessível e, quando configurado, criação nativa no backend.
+- Exige POST, CSRF, leitura da origem, categoria visível/compatível, entidade final acessível e, quando configurado, criação nativa no backend.
 - Reduz exposição do endpoint de relacionados e remove dependência do perfil `Super-Admin`.
 - Minimiza logs e mensagens de falha, sem conteúdo livre, títulos ou detalhes internos.
 

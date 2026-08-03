@@ -567,6 +567,8 @@ JAVASCRIPT;
         $type = (int) ($resolved['type'] ?? $ticket->getField('type'));
         $itilcategories_id = (int) ($resolved['category'] ?? $ticket->getField('itilcategories_id'));
         $entities_id = (int) $ticket->getField('entities_id');
+        $source_entity_id = $entities_id;
+        $enforce_native_permissions = PluginEbenezercloneConfig::shouldRequireGlpiTicketCreatePermission();
 
         if ($type <= 0) {
             Session::addMessageAfterRedirect(t_ebenezerclone('Type is mandatory.'), false, ERROR);
@@ -588,7 +590,7 @@ JAVASCRIPT;
         $name = self::addClonedTitlePrefix($name);
 
         $target_category = new ITILCategory();
-        if (!$target_category->getFromDB($itilcategories_id) || !$target_category->can($itilcategories_id, READ)) {
+        if (!$target_category->getFromDB($itilcategories_id)) {
             Session::addMessageAfterRedirect(t_ebenezerclone('Selected category is not available.'), false, ERROR);
             return null;
         }
@@ -597,6 +599,11 @@ JAVASCRIPT;
             ($type === Ticket::INCIDENT_TYPE && empty($target_category->fields['is_incident']))
             || ($type === Ticket::DEMAND_TYPE && empty($target_category->fields['is_request']))
         ) {
+            Session::addMessageAfterRedirect(t_ebenezerclone('Selected category is not available.'), false, ERROR);
+            return null;
+        }
+
+        if (!self::isCategoryInCloneDropdownScope($target_category, $source_entity_id)) {
             Session::addMessageAfterRedirect(t_ebenezerclone('Selected category is not available.'), false, ERROR);
             return null;
         }
@@ -610,7 +617,11 @@ JAVASCRIPT;
         if ($target_entity > 0) {
             $entities_id = $target_entity;
         }
-        if (!Session::haveAccessToEntity($entities_id)) {
+        if ($enforce_native_permissions && !$target_category->can($itilcategories_id, READ)) {
+            Session::addMessageAfterRedirect(t_ebenezerclone('Selected category is not available.'), false, ERROR);
+            return null;
+        }
+        if ($enforce_native_permissions && !Session::haveAccessToEntity($entities_id)) {
             Session::addMessageAfterRedirect(__('You do not have permission to perform this action.'), false, ERROR);
             return null;
         }
@@ -623,10 +634,7 @@ JAVASCRIPT;
 
         $new = new Ticket();
         $new->fields['entities_id'] = $entities_id;
-        if (
-            PluginEbenezercloneConfig::shouldRequireGlpiTicketCreatePermission()
-            && !$new->canCreateItem()
-        ) {
+        if ($enforce_native_permissions && !$new->canCreateItem()) {
             Session::addMessageAfterRedirect(__('You do not have permission to perform this action.'), false, ERROR);
             return null;
         }
@@ -779,6 +787,35 @@ JAVASCRIPT;
         );
 
         return $new_id;
+    }
+
+    private static function isCategoryInCloneDropdownScope(ITILCategory $category, int $source_entity_id): bool
+    {
+        global $DB;
+
+        $table = $category->getTable();
+        $where = [
+            "$table.id" => (int) $category->getID(),
+        ];
+        if ($category->maybeDeleted()) {
+            $where["$table.is_deleted"] = 0;
+        }
+        $where = $where + getEntitiesRestrictCriteria(
+            $table,
+            '',
+            $source_entity_id,
+            $category->maybeRecursive()
+        );
+
+        foreach ($DB->request([
+            'FROM'  => $table,
+            'WHERE' => $where,
+            'LIMIT' => 1,
+        ]) as $_) {
+            return true;
+        }
+
+        return false;
     }
 
     private static function normalizeTicketContentForClone(string $content): string

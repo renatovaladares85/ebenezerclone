@@ -1173,7 +1173,7 @@ class PluginEbenezercloneConfig extends CommonDBTM
                 ['display' => false]
             );
             $require_glpi_ticket_create_permission_tooltip = Html::showToolTip(
-                t_ebenezerclone('Checked: cloning also requires the native GLPI Ticket create right in the final entity. Unchecked: the plugin authorization still applies, but disabling this requirement increases security risk.'),
+                t_ebenezerclone('Checked: cloning requires native GLPI permissions for the selected category, final entity and Ticket creation. Unchecked: plugin authorization can create the clone without these native prechecks; GLPI may deny access to the created ticket.'),
                 ['display' => false]
             );
             echo "<div class='mb-2'>";
@@ -1221,7 +1221,7 @@ class PluginEbenezercloneConfig extends CommonDBTM
             } else {
                 echo !empty($values[self::CONFIG_KEY_REQUIRE_GLPI_TICKET_CREATE_PERMISSION]) ? __('Yes') : __('No');
             }
-            echo "&nbsp;<span>" . t_ebenezerclone('Require native GLPI Ticket create permission') . "</span>";
+            echo "&nbsp;<span>" . t_ebenezerclone('Apply native GLPI permissions during cloning') . "</span>";
             echo "&nbsp;$require_glpi_ticket_create_permission_tooltip";
             echo "</div>";
             foreach ($component_definitions as $copy_key => $copy_definition) {
