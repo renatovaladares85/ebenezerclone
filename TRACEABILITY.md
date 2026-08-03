@@ -117,7 +117,14 @@ Arvore logica de entrega:
 - Compatibilidade e configuracoes globais
   - `HEAD` (faixa GLPI, migracao retrocompativel e regras independentes)
 - Backend e minimizacao
-  - `HEAD` (CSRF, entidade/categoria, relacionados, logs e acao nativa)
+  - `HEAD` (CSRF automatico no bootstrap, entidade/categoria, relacionados, logs e acao nativa)
+
+### 3.1.29 (patch release)
+Criterio: restauracao compativel do modo permissivo de clonagem, mantendo o modo estrito por permissao nativa.
+
+Arvore logica de entrega:
+- Modos de permissao na clonagem
+  - `HEAD` (ACL do plugin obrigatoria, integridade da categoria e ACLs nativas condicionadas ao modo estrito)
 ## Matriz de rastreio
 
 | Item | Identificador |
@@ -127,7 +134,7 @@ Arvore logica de entrega:
 | PRs relacionados | `#10`, `#11`, `#12` |
 | Merges relevantes em `main` | `3d0af347`, `085b0e4a`, `354035a9` |
 | Tags HML relacionadas | `v10.0.20-hml-003`, `v10.0.20-hml-004`, `v10.0.20-hml-005` |
-| Versão atual do plugin | `3.1.28` |
+| Versão atual do plugin | `3.1.29` |
 | Regra de build por commit | `<release>+git.<short_sha>` |
 
 ## Regra operacional para próximos commits

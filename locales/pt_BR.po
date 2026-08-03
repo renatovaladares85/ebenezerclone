@@ -361,11 +361,11 @@ msgstr "Exibir chamados relacionados ocultados pela visibilidade nativa"
 msgid "Checked: shows related tickets hidden by the native interface. This can broaden visibility of relationship metadata and must be enabled only after confidentiality review."
 msgstr "Marcado: exibe chamados relacionados ocultados pela interface nativa. Isso pode ampliar a visibilidade de metadados de relacionamento e só deve ser habilitado após análise de confidencialidade."
 
-msgid "Require native GLPI Ticket create permission"
-msgstr "Exigir permissão nativa do GLPI para criar chamado"
+msgid "Apply native GLPI permissions during cloning"
+msgstr "Aplicar permissões nativas do GLPI na clonagem"
 
-msgid "Checked: cloning also requires the native GLPI Ticket create right in the final entity. Unchecked: the plugin authorization still applies, but disabling this requirement increases security risk."
-msgstr "Marcado: a clonagem também exige o direito nativo do GLPI para criar chamado na entidade final. Desmarcado: a autorização do plugin continua sendo aplicada, mas desabilitar esta exigência aumenta o risco de segurança."
+msgid "Checked: cloning requires native GLPI permissions for the selected category, final entity and Ticket creation. Unchecked: plugin authorization can create the clone without these native prechecks; GLPI may deny access to the created ticket."
+msgstr "Marcado: a clonagem exige permissões nativas do GLPI para a categoria selecionada, entidade final e criação do chamado. Desmarcado: a autorização do plugin pode criar o clone sem essas verificações nativas; o GLPI pode negar acesso ao chamado criado."
 
 msgid "Selected category is not available."
 msgstr "A categoria selecionada não está disponível."

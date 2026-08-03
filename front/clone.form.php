@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 if (isset($_POST['_clone'])) {
-    Session::checkCSRF($_POST);
+    // GLPI validates and consumes the CSRF token while loading inc/includes.php.
     $new_id = PluginEbenezercloneClone::cloneTicket($_POST);
     if ($new_id) {
         $ticket = new Ticket();
@@ -20,4 +20,4 @@ if (isset($_POST['_clone'])) {
     Html::back();
 }
 
-Html::displayErrorAndDie('Lost!');
+Html::displayErrorAndDie(__('Invalid request.'));

@@ -25,7 +25,7 @@ Plugin para GLPI 10.0.x que adiciona uma aba para clonar chamados com rastreabil
 
 - GLPI `>= 10.0.20` e `< 11.0.0`
 - Plugin em `plugins/ebenezerclone`
-- Permissões de ticket no perfil e direito do plugin habilitado
+- Direito do plugin habilitado e leitura do chamado de origem; permissões nativas do GLPI são exigidas somente no modo estrito de clonagem
 
 ## Instalação
 
@@ -43,7 +43,26 @@ Direito principal do plugin:
 Com esse direito e leitura do chamado de origem:
 
 - a aba **Clonar chamado** fica visível para os escopos perfil + entidade configurados;
-- a criação nativa de Ticket é exigida somente quando a opção global correspondente estiver habilitada.
+- a autorização do plugin continua obrigatória nos dois modos de clonagem.
+
+### Modos de permissão da clonagem
+
+#### Permissões nativas desmarcadas — modo legado/permissivo
+
+- A autorização perfil + entidade do Ebenezer Clone controla quem pode clonar.
+- O plugin valida a integridade da categoria selecionada, mas não exige permissões nativas de categoria, entidade ou criação antes de criar.
+- O chamado pode ser criado em categoria ou entidade que o usuário atual não consiga visualizar.
+- Após o redirecionamento, o GLPI pode negar a visualização; a mensagem de sucesso do plugin continua indicando que a criação ocorreu.
+- O comportamento também se aplica durante personificação, sempre no contexto efetivo da sessão.
+
+#### Permissões nativas marcadas — modo GLPI/estrito
+
+- A autorização do plugin continua obrigatória.
+- O GLPI também valida a categoria selecionada, a entidade final e a criação do chamado antes de gravar.
+- Se alguma permissão nativa falhar, nenhum chamado ou vínculo é criado.
+- A personificação usa os direitos do usuário personificado.
+
+O modo permissivo deve ser usado somente quando o processo organizacional aceitar a delegação ao plugin. Ele não amplia a ACL de leitura, não torna o usuário administrador e não garante acesso posterior ao chamado criado. A operação permanece auditável pelos registros da clonagem.
 
 ## Como usar
 
@@ -126,7 +145,7 @@ Em **Configurar > Geral > Ebenezer Clone**:
 - modo dos campos do formulário de clone;
 - políticas globais de cópia, incluindo `items` para vínculos de chamados relacionados e `ticket_link` para o vínculo origem-clone;
 - exibição adicional de chamados relacionados ocultados pela ACL nativa;
-- exigência do direito nativo de criação de Ticket no GLPI.
+- aplicação das permissões nativas do GLPI para categoria, entidade e criação do chamado.
 
 Em instalação nova, a exibição adicional inicia desabilitada e a exigência do direito nativo inicia habilitada. Em upgrade, a ausência dessas chaves preserva o comportamento legado.
 
